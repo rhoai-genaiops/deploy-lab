@@ -1,0 +1,25 @@
+{{ $cluster_domain := .Values.cluster_domain }}
+{{ $attendees := (.Values.attendees | int) }}
+{{- range $bucket := .Values.minio.buckets }}
+{{- range $attendee := until $attendees }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-connection-{{ $bucket.name }}
+  namespace: user{{ $attendee }}-jukebox
+  labels:
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/managed: "true"
+  annotations:
+    opendatahub.io/connection-type: s3
+    openshift.io/display-name: {{ $bucket.name }}
+type: Opaque
+stringData:
+  AWS_ACCESS_KEY_ID: user{{ $attendee }}
+  AWS_SECRET_ACCESS_KEY: thisisthepassword
+  AWS_DEFAULT_REGION: wonderland
+  AWS_S3_ENDPOINT: https://minio-api-user{{ $attendee }}-jukebox.{{ $cluster_domain }}
+  AWS_S3_BUCKET: {{ $bucket.name }}
+{{- end }}
+{{- end }}
