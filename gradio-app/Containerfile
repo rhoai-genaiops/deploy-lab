@@ -1,0 +1,35 @@
+# Use Red Hat Universal Base Image 9 with Python 3.11
+FROM registry.access.redhat.com/ubi9/python-311:1-66
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Switch to root to install system dependencies
+USER root
+
+# Update package manager and install any additional system dependencies if needed
+RUN dnf update -y && \
+    dnf clean all
+
+# Switch back to the default user (1001)
+USER 1001
+
+# Set working directory
+WORKDIR /opt/app-root/src
+
+# Copy requirements file
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY app.py .
+
+# Expose the port that Gradio runs on
+EXPOSE 7860
+
+# Set the command to run the application
+CMD ["python", "app.py"]
