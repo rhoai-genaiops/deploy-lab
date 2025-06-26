@@ -1,0 +1,13 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+spec:
+  path: /
+  to:
+    kind: Service
+    name: docling-v0-7-0-predictor
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+  wildcardPolicy: None

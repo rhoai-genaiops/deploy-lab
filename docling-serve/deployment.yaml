@@ -1,0 +1,86 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: '1'
+    openshift.io/display-name: Docling Serve
+  name: docling-v0-7-0-predictor
+  labels:
+    app: docling-v0-7-0-predictor
+    component: predictor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docling-v0-7-0-predictor
+  template:
+    metadata:
+      name: docling-v0-7-0-predictor
+      creationTimestamp: null
+      labels:
+        app: docling-v0-7-0-predictor
+        component: predictor
+        opendatahub.io/dashboard: 'true'
+      annotations:
+        openshift.io/display-name: Docling Serve
+    spec:
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 2Gi
+      containers:
+        - resources:
+            limits:
+              cpu: '6'
+              memory: 24Gi
+              nvidia.com/gpu: '1'
+            requests:
+              cpu: '4'
+              memory: 8Gi
+              nvidia.com/gpu: '1'
+          readinessProbe:
+            tcpSocket:
+              port: 5001
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          name: kserve-container
+          command:
+            - python
+            - '-m'
+            - docling_serve
+            - run
+          env:
+            - name: UVICORN_WORKERS
+              value: '3'
+            - name: WITH_UI
+              value: 'True'
+          ports:
+            - containerPort: 5001
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: shm
+              mountPath: /dev/shm
+          terminationMessagePolicy: File
+          image: 'ghcr.io/docling-project/docling-serve-cu124:v0.7.0'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Equal
+          value: Tesla-T4-PRIVATE
+          effect: NoSchedule
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

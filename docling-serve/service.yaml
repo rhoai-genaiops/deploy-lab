@@ -1,0 +1,26 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: docling-v0-7-0-predictor
+  labels:
+    app: docling-v0-7-0-predictor
+    component: predictor
+  annotations:
+    openshift.io/display-name: Docling Serve
+spec:
+  clusterIP: None
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 5001
+  internalTrafficPolicy: Cluster
+  clusterIPs:
+    - None
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    app: docling-v0-7-0-predictor
