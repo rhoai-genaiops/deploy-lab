@@ -1,0 +1,9 @@
+---
+apiVersion: helm.openshift.io/v1beta1
+kind: HelmChartRepository
+metadata:
+  name: canopy
+spec:
+  connectionConfig:
+    url: 'https://rhoai-genaiops.github.io/canopy-ui/'
+  name: canopy
