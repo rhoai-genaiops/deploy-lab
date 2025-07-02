@@ -62,11 +62,12 @@ spec:
           REPO_URL="https://github.com/rhoai-genaiops/deploy-lab.git"
           REPO_NAME="deploy-lab"
           SOURCE_DIR="university-data"
-          LOCAL_TMP_DIR="./tmp-university-data"
+          LOCAL_TMP_DIR="/tmp/tmp-university-data"
 
           # Clone or update the repo
           if [ ! -d "$REPO_NAME" ]; then
             echo "Cloning repository..."
+            cd /tmp
             git clone "$REPO_URL"
           else
             echo "Repository exists. Pulling latest changes..."
@@ -75,7 +76,7 @@ spec:
 
           # Prepare local temporary folder
           mkdir -p "$LOCAL_TMP_DIR"
-          cp "$REPO_NAME/$SOURCE_DIR"/*.pdf "$LOCAL_TMP_DIR"
+          cp "/tmp/$REPO_NAME/$SOURCE_DIR"/*.pdf "$LOCAL_TMP_DIR"
 
           # Rsync PDFs into the pod
           echo "🔄 Syncing PDFs to pod $POD_NAME..."
