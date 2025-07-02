@@ -7,7 +7,7 @@ oc wait --for=jsonpath='{.status.availableReplicas}'=1 -n openshift-gitops deplo
 # Install the toolings
 helm upgrade --install ai501-toolings toolings --namespace ai501 --create-namespace
 
-# Install the toolings
+# Install the user content
 helm upgrade --install ai501-student-content student-content --namespace ai501 --create-namespace
 
 

@@ -1,8 +1,7 @@
 ---
-cluster_domain: apps.abc.opentlc.com
+cluster_domain: apps.cluster-gm86c.gm86c.sandbox1062.opentlc.com
 attendees: 10
 
 minio:
   buckets:
     - name: pipeline
-    - name: models
