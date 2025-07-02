@@ -26,9 +26,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY app.py .
+COPY *.py .
+COPY apps apps/
 
-# Expose the port that Gradio runs on
+# Expose the port that the app runs on
 EXPOSE 7860
 
 # Set the command to run the application
