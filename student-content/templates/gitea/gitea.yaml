@@ -18,15 +18,12 @@ spec:
   giteaUserPasswordSecretName: gitea-user-password
   giteaMigrateRepositories: true
   giteaRepositoriesList:
-  - repo: https://github.com/rhoai-mlops/jukebox.git
-    name: jukebox
+  - repo: https://github.com/rhoai-genaiops/canopy.git
+    name: canopy
     private: true
-  - repo: https://github.com/rhoai-mlops/mlops-helmcharts.git
-    name: mlops-helmcharts
-    private: true
-  - repo: https://github.com/rhoai-mlops/mlops-gitops.git
+  - repo: https://github.com/rhoai-genaiops/genaiops-gitops.git
     name: mlops-gitops
     private: true
-  - repo: https://github.com/rhoai-mlops/jukebox-ui.git 
-    name: jukebox-ui
+  - repo: https://github.com/rhoai-genaiops/canopy-ui.git 
+    name: canopy-ui
     private: true

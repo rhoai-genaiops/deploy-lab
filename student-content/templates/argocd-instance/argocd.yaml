@@ -59,7 +59,7 @@ spec:
         key: username
         name: git-auth
       insecure: true
-    - url: https://gitea-gitea.{{ $cluster_domain }}/user{{ $attendee}}/jukebox-ui.git
+    - url: https://gitea-gitea.{{ $cluster_domain }}/user{{ $attendee}}/canopy-ui.git
       type: git
       passwordSecret:
         key: password

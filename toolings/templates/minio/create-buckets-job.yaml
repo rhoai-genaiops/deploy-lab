@@ -1,0 +1,84 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: minio-manage
+  namespace: ai501
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: minio-manage-rb
+  namespace: ai501
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- kind: ServiceAccount
+  name: minio-manage
+  namespace: ai501
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-buckets
+  namespace: ai501
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      serviceAccount: minio-manage
+      serviceAccountName: minio-manage
+      restartPolicy: Never
+      containers:
+      - name: create-buckets
+        image: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo -n "Waiting for minio pod in ai501 namespace"
+          oc -n ai501 wait pod -l app=minio --for=condition=Ready --timeout=180s
+          echo "✅ Minio pod is running in ai501 namespace"
+
+          # Get just the pod name
+          POD_NAME=$(oc -n ai501 get pod -l app=minio -o jsonpath='{.items[0].metadata.name}')
+
+          # Create directory inside the pod
+          oc -n ai501 rsh "$POD_NAME" mkdir -p /data/university-data
+          echo "📚 university-data bucket is created."
+
+          # Constants
+          REPO_URL="https://github.com/rhoai-genaiops/deploy-lab.git"
+          REPO_NAME="deploy-lab"
+          SOURCE_DIR="university-data"
+          LOCAL_TMP_DIR="./tmp-university-data"
+
+          # Clone or update the repo
+          if [ ! -d "$REPO_NAME" ]; then
+            echo "Cloning repository..."
+            git clone "$REPO_URL"
+          else
+            echo "Repository exists. Pulling latest changes..."
+            cd "$REPO_NAME" && git pull && cd ..
+          fi
+
+          # Prepare local temporary folder
+          mkdir -p "$LOCAL_TMP_DIR"
+          cp "$REPO_NAME/$SOURCE_DIR"/*.pdf "$LOCAL_TMP_DIR"
+
+          # Rsync PDFs into the pod
+          echo "🔄 Syncing PDFs to pod $POD_NAME..."
+          oc -n ai501 rsync "$LOCAL_TMP_DIR" "$POD_NAME:/data/university-data/"
+
+          echo "✅ Done."

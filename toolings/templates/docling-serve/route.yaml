@@ -1,16 +1,14 @@
+---
 kind: Route
 apiVersion: route.openshift.io/v1
-metadata:
-  name: gradio-prompt-app
 spec:
   path: /
   to:
     kind: Service
-    name: gradio-prompt-app
+    name: docling-v0-7-0-predictor
     weight: 100
   port:
     targetPort: http
   tls:
     termination: edge
-    insecureEdgeTerminationPolicy: Redirect
   wildcardPolicy: None
