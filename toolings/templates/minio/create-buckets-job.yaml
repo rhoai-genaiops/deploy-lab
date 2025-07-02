@@ -36,50 +36,103 @@ spec:
   backoffLimit: 4
   template:
     spec:
-      serviceAccount: minio-manage
       serviceAccountName: minio-manage
       restartPolicy: Never
       containers:
-      - name: create-buckets
-        image: image-registry.openshift-image-registry.svc:5000/openshift/tools:latest
-        imagePullPolicy: IfNotPresent
-        command:
-        - /bin/bash
-        - -c
-        - |
-          echo -n "Waiting for minio pod in ai501 namespace"
-          oc -n ai501 wait pod -l app=minio --for=condition=Ready --timeout=180s
-          echo "✅ Minio pod is running in ai501 namespace"
+        - name: create-buckets
+          image: image-registry.openshift-image-registry.svc:5000/redhat-ods-applications/s2i-generic-data-science-notebook:2024.1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: minio_root_user
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: minio_root_password
+            - name: S3_ENDPOINT_URL
+              value: "http://minio-service:9000"
+            - name: BUCKET_NAME
+              value: "university-data"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              pip3 install boto3 gitpython
+              echo -n "Waiting for minio pod in ai501 namespace"
+              oc -n ai501 wait pod -l app=minio --for=condition=Ready --timeout=180s
+              echo "✅ Minio pod is running in ai501 namespace"
+              cat << 'EOF' | python3
+              import os
+              from pathlib import Path
+              import boto3
+              from botocore.exceptions import ClientError
+              from git import Repo
 
-          # Get just the pod name
-          POD_NAME=$(oc -n ai501 get pod -l app=minio -o jsonpath='{.items[0].metadata.name}')
+              REPO_URL = "https://github.com/rhoai-genaiops/deploy-lab.git"
+              REPO_NAME = "deploy-lab"
+              UNIVERSITY_DATA_DIR = "university-data"
 
-          # Create directory inside the pod
-          oc -n ai501 rsh "$POD_NAME" mkdir -p /data/university-data
-          echo "📚 university-data bucket is created."
+              BUCKET_NAME = os.environ.get("BUCKET_NAME")
+              S3_PREFIX = ""  # Upload directly to bucket root
 
-          # Constants
-          REPO_URL="https://github.com/rhoai-genaiops/deploy-lab.git"
-          REPO_NAME="deploy-lab"
-          SOURCE_DIR="university-data"
-          LOCAL_TMP_DIR="/tmp/tmp-university-data"
+              S3_ENDPOINT_URL = os.environ.get("S3_ENDPOINT_URL")
+              AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+              AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
-          # Clone or update the repo
-          if [ ! -d "$REPO_NAME" ]; then
-            echo "Cloning repository..."
-            cd /tmp
-            git clone "$REPO_URL"
-          else
-            echo "Repository exists. Pulling latest changes..."
-            cd "$REPO_NAME" && git pull && cd ..
-          fi
+              def clone_or_update_repo():
+                  if not os.path.exists(REPO_NAME):
+                      print(f"Cloning repository from {REPO_URL}...")
+                      Repo.clone_from(REPO_URL, REPO_NAME)
+                  else:
+                      print(f"Repository '{REPO_NAME}' already exists. Pulling latest changes...")
+                      repo = Repo(REPO_NAME)
+                      repo.remotes.origin.pull()
 
-          # Prepare local temporary folder
-          mkdir -p "$LOCAL_TMP_DIR"
-          cp "/tmp/$REPO_NAME/$SOURCE_DIR"/*.pdf "$LOCAL_TMP_DIR"
+              def ensure_bucket_exists(s3, bucket_name):
+                  try:
+                      s3.head_bucket(Bucket=bucket_name)
+                      print(f"✅ Bucket '{bucket_name}' already exists.")
+                  except ClientError as e:
+                      error_code = e.response['Error']['Code']
+                      if error_code in ['404', 'NoSuchBucket']:
+                          print(f"📦 Bucket '{bucket_name}' not found. Creating it...")
+                          s3.create_bucket(Bucket=bucket_name)
+                          print(f"✅ Bucket '{bucket_name}' created.")
+                      else:
+                          raise e
 
-          # Rsync PDFs into the pod
-          echo "🔄 Syncing PDFs to pod $POD_NAME..."
-          oc -n ai501 rsync "$LOCAL_TMP_DIR" "$POD_NAME:/data/university-data/"
+              def upload_files_to_s3(local_path: Path, s3_prefix: str, bucket_name: str):
+                  s3 = boto3.client(
+                      "s3",
+                      endpoint_url=S3_ENDPOINT_URL,
+                      aws_access_key_id=AWS_ACCESS_KEY_ID,
+                      aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+                  )
 
-          echo "✅ Done."
+                  ensure_bucket_exists(s3, bucket_name)
+
+                  for file in local_path.rglob("*"):
+                      if file.is_file():
+                          relative_path = file.relative_to(local_path)
+                          s3_key = os.path.join(s3_prefix, str(relative_path).replace("\\", "/"))
+                          print(f"⬆️  Uploading {file} to s3://{bucket_name}/{s3_key}")
+                          s3.upload_file(str(file), bucket_name, s3_key)
+
+                  print("✅ All files uploaded successfully.")
+
+              def main():
+                  clone_or_update_repo()
+                  university_data_path = Path(REPO_NAME) / UNIVERSITY_DATA_DIR
+
+                  if not university_data_path.exists() or not university_data_path.is_dir():
+                      raise FileNotFoundError(f"{university_data_path} does not exist or is not a directory")
+
+                  upload_files_to_s3(university_data_path, S3_PREFIX, BUCKET_NAME)
+
+              if __name__ == "__main__":
+                  main()
+              EOF
