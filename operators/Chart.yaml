@@ -1,16 +1,15 @@
 apiVersion: v2
-name: ml500-operators
-description: A Helm chart to deploy the ML500 Lab 
+name: ai501-operators
+description: A Helm chart to deploy the AI501 Operators 
 type: application
 version: 1.0.0
 appVersion: 1.0.0 
 maintainers:
   - name: rcarrata
-  - name: nstrung
   - name: rhrolun
   - name: ckavili
-dependencies:
-  - name: sealed-secrets
-    version: "2.17.2"
-    repository: https://bitnami-labs.github.io/sealed-secrets
-    condition: sealed-secrets.enabled
+# dependencies:
+#   - name: sealed-secrets
+#     version: "2.17.2"
+#     repository: https://bitnami-labs.github.io/sealed-secrets
+#     condition: sealed-secrets.enabled
