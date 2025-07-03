@@ -6,4 +6,4 @@ metadata:
 spec:
   connectionConfig:
     url: 'https://rhoai-genaiops.github.io/canopy-ui/'
-  name: canopy
+  name: Canopy Helm Charts

@@ -6,6 +6,7 @@ metadata:
     openshift.io/display-name: llama32
     serving.kserve.io/deploymentMode: RawDeployment
   name: llama32
+  namespace: ai501
   labels:
     opendatahub.io/dashboard: 'true'
 spec:
@@ -45,6 +46,7 @@ metadata:
     opendatahub.io/template-name: vllm-cpu
     openshift.io/display-name: llama32
   name: llama32
+  namespace: ai501
   labels:
     opendatahub.io/dashboard: 'true'
 spec:
