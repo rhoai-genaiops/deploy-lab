@@ -8,20 +8,22 @@ BASE_URL = os.getenv('MODEL_URL', 'http://localhost:8080')
 # Get model name from environment variable
 MODEL_NAME = os.getenv('MODEL_NAME', 'gpt-3.5-turbo')
 
-def chat_with_model_stream(message):
+def chat_with_model_stream(message, temperature=0.7):
     if not message:
         yield "Please provide a message."
         return
     
     try:
-        # Append /chat/completions to the base URL
-        model_url = f"{BASE_URL.rstrip('/')}/chat/completions"
+        # Append /v1/chat/completions to the base URL
+        model_url = f"{BASE_URL.rstrip('/')}/v1/chat/completions"
         
         payload = {
             "model": MODEL_NAME,
             "messages": [
                 {"role": "user", "content": message}
             ],
+            "temperature": float(temperature),
+            "max_tokens": 2048,  # Default max tokens, can be adjusted
             "stream": True
         }
 
@@ -43,6 +45,7 @@ def chat_with_model_stream(message):
                     break
                 try:
                     chunk = json.loads(data)
+                    # For chat endpoint, the response format uses delta.content
                     delta = chunk.get("choices", [{}])[0].get("delta", {}).get("content", "")
                     partial += delta
                     yield partial
@@ -67,50 +70,70 @@ def create_chat_interface():
         textarea {
             resize: none !important;
         }
+        /* Align input components in the same row */
+        .gradio-container .row {
+            align-items: end !important;
+        }
+        .gradio-container .row > div {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: flex-end !important;
+        }
+        /* Make message textbox double height */
+        .gradio-container .row textarea {
+            height: 95px !important;
+            min-height: 95px !important;
+            max-height: 95px !important;
+        }
     """) as interface:
         with gr.Column():
             gr.Markdown(
-                f"Using Model URL: {BASE_URL}/chat/completions",
+                f"Using Model URL: {BASE_URL}/v1/chat/completions",
                 elem_classes="contain"
             )
             
-            chatbot = gr.Chatbot(
-                label="Chat History",
-                elem_id="chatbot",
-                container=False,
-                height=400,
-                type="messages"  # Use new message format
+            output = gr.Textbox(
+                label="Response",
+                lines=15,
+                max_lines=25,
+                interactive=False,
+                placeholder="AI response will appear here...",
+                show_copy_button=True,
+                elem_classes="contain"
             )
             
-            msg = gr.Textbox(
-                label="Message",
-                placeholder="Type your message here...",
-                container=False,
-                lines=2,
-                elem_classes="contain",
-                autofocus=True
-            )
+            with gr.Row():
+                msg = gr.Textbox(
+                    label="Prompt",
+                    placeholder="Type your prompt here...",
+                    container=False,
+                    lines=3,
+                    elem_classes="contain",
+                    autofocus=True,
+                    scale=4
+                )
+                temperature = gr.Slider(
+                    label="Temperature",
+                    minimum=0.0,
+                    maximum=1.0,
+                    value=0.7,
+                    step=0.1,
+                    elem_classes="contain",
+                    scale=1
+                )
+            
             submit_btn = gr.Button("Send", variant="primary", elem_classes="contain")
 
-            def user(message, history):
-                return "", history + [{"role": "user", "content": message}]
-
-            def bot(history):
-                if not history:
-                    return history
+            def generate_response(prompt, temp):
+                if not prompt:
+                    return "Please enter a prompt."
                 
-                last_message = history[-1]["content"]
-                history.append({"role": "assistant", "content": ""})
-                
-                for chunk in chat_with_model_stream(last_message):
-                    history[-1]["content"] = chunk
-                    yield history
+                response = ""
+                for chunk in chat_with_model_stream(prompt, temp):
+                    response = chunk
+                    yield response
 
-            submit_event = msg.submit(user, [msg, chatbot], [msg, chatbot]).then(
-                bot, [chatbot], chatbot
-            )
-            submit_btn.click(fn=user, inputs=[msg, chatbot], outputs=[msg, chatbot]).then(
-                bot, [chatbot], chatbot
-            )
+            msg.submit(generate_response, [msg, temperature], output)
+            submit_btn.click(generate_response, [msg, temperature], output)
 
     return interface

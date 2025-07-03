@@ -4,9 +4,9 @@ import json
 import os
 
 # Get base model URL from environment variable
-BASE_URL = os.getenv('MODEL_URL', 'http://localhost:8080')
+BASE_URL = os.getenv('TINY_URL', 'https://tinyllama-1b-cpu-ai501.apps.cluster-gm86c.gm86c.sandbox1062.opentlc.com')
 # Get model name from environment variable
-MODEL_NAME = os.getenv('MODEL_NAME', 'gpt-3.5-turbo')
+MODEL_NAME = os.getenv('TINY_MODEL_NAME', 'tinyllama')
 
 def chat_with_model_stream(message, max_tokens=30):
     if not message:
@@ -15,7 +15,7 @@ def chat_with_model_stream(message, max_tokens=30):
     
     try:
         # Append /chat/completions to the base URL
-        model_url = f"{BASE_URL.rstrip('/')}/chat/completions"
+        model_url = f"{BASE_URL.rstrip('/')}/v1/chat/completions"
         
         payload = {
             "model": MODEL_NAME,
@@ -68,7 +68,7 @@ def create_context_demo():
         with gr.Column():
             gr.Markdown(
                 """# Limited Context Demo
-                This demo shows how a small context window (30 tokens) affects the model's responses.
+                This demo shows how a small context window (64 tokens) affects the model's responses.
                 Try asking a complex question and see how the response gets cut off.""",
                 elem_classes="contain"
             )

@@ -21,9 +21,13 @@ spec:
         imagePullPolicy: Always
         env:
         - name: MODEL_URL
-          value: https://gradio-app-ai501.{{ .Values.cluster_domain }}
+          value: https://llama32-ai501.{{ .Values.cluster_domain }}
         - name: MODEL_NAME
           value: "{{ .Values.modelName | default "llama32" }}"
+        - name: TINY_URL
+          value: https://tinyllama-1b-cpu-ai501.{{ .Values.cluster_domain }}
+        - name: TINY_MODEL_NAME
+          value: "{{ .Values.tinyModelName | default "tinyllama" }}"
         ports:
         - containerPort: 7860
           name: http
