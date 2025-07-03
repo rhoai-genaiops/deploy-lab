@@ -99,7 +99,7 @@ spec:
   path: /
   to:
     kind: Service
-    name: llama32-full-predictor
+    name: llama32-predictor
     weight: 100
   port:
     targetPort: http
