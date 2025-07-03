@@ -5,6 +5,8 @@ import os
 
 # Get base model URL from environment variable
 BASE_URL = os.getenv('MODEL_URL', 'http://localhost:8080')
+# Get model name from environment variable
+MODEL_NAME = os.getenv('MODEL_NAME', 'gpt-3.5-turbo')
 
 def chat_with_model_stream(message, max_tokens=30):
     if not message:
@@ -16,6 +18,7 @@ def chat_with_model_stream(message, max_tokens=30):
         model_url = f"{BASE_URL.rstrip('/')}/chat/completions"
         
         payload = {
+            "model": MODEL_NAME,
             "messages": [
                 {"role": "user", "content": message}
             ],

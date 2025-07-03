@@ -21,7 +21,9 @@ spec:
         imagePullPolicy: Always
         env:
         - name: MODEL_URL
-          value: "{{ .Values.modelUrl | default "" }}"
+          value: https://gradio-app-ai501.{{ .Values.cluster_domain }}
+        - name: MODEL_NAME
+          value: "{{ .Values.modelName | default "llama32" }}"
         ports:
         - containerPort: 7860
           name: http
