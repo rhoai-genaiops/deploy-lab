@@ -88,3 +88,20 @@ spec:
         medium: Memory
         sizeLimit: 2Gi
       name: shm
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: llama32
+  labels:
+    app: llama32
+spec:
+  to:
+    kind: Service
+    name: llama32
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+  wildcardPolicy: None
