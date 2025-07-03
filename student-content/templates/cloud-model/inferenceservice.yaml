@@ -96,12 +96,14 @@ metadata:
   labels:
     app: llama32
 spec:
+  path: /
   to:
     kind: Service
-    name: llama32
+    name: llama32-full-predictor
     weight: 100
   port:
     targetPort: http
   tls:
     termination: edge
+    insecureEdgeTerminationPolicy: Redirect
   wildcardPolicy: None
