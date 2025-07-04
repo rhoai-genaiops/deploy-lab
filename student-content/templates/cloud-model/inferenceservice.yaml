@@ -42,8 +42,8 @@ metadata:
   annotations:
     opendatahub.io/accelerator-name: ''
     opendatahub.io/apiProtocol: REST
-    opendatahub.io/template-display-name: vLLM-cpu
-    opendatahub.io/template-name: vllm-cpu
+    opendatahub.io/template-display-name: vLLM
+    opendatahub.io/template-name: vllm
     openshift.io/display-name: llama32
   name: llama32
   namespace: ai501
@@ -102,7 +102,7 @@ spec:
     name: llama32-predictor
     weight: 100
   port:
-    targetPort: http
+    targetPort: http1
   tls:
     termination: edge
     insecureEdgeTerminationPolicy: Redirect
