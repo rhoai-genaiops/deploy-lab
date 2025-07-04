@@ -16,3 +16,12 @@ spec:
   connectionConfig:
     url: 'https://rhoai-genaiops.github.io/genaiops-helmcharts/'
   name: GenAIOps Helm Charts
+---
+apiVersion: helm.openshift.io/v1beta1
+kind: HelmChartRepository
+metadata:
+  name: canopy-be
+spec:
+  connectionConfig:
+    url: 'https://rhoai-genaiops.github.io/canopy-be/'
+  name: Canopy Helm Charts
