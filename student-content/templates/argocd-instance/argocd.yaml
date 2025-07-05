@@ -1,6 +1,6 @@
 {{ $cluster_domain := .Values.cluster_domain }}
-{{ $attendees := (.Values.attendees | int) }}
-{{- range $attendee := until $attendees }}
+{{ $attendees := (add1 .Values.attendees | int) }}
+{{- range $attendee := untilStep 1 $attendees 1 }}
 ---
 apiVersion: argoproj.io/v1beta1
 kind: ArgoCD
@@ -41,7 +41,7 @@ spec:
       openShiftOAuth: true
     provider: dex
   initialRepositories: |
-    - url: https://gitea-gitea.{{ $cluster_domain }}/user{{ $attendee}}/mlops-gitops.git
+    - url: https://gitea-gitea.{{ $cluster_domain }}/user{{ $attendee}}/genaiops-gitops.git
       type: git
       passwordSecret:
         key: password
@@ -50,7 +50,7 @@ spec:
         key: username
         name: git-auth
       insecure: true
-    - url: https://gitea-gitea.{{ $cluster_domain }}/user{{ $attendee}}/mlops-helmcharts.git
+    - url: https://gitea-gitea.{{ $cluster_domain }}/user{{ $attendee}}/genaiops-helmcharts.git
       type: git
       passwordSecret:
         key: password
@@ -60,6 +60,15 @@ spec:
         name: git-auth
       insecure: true
     - url: https://gitea-gitea.{{ $cluster_domain }}/user{{ $attendee}}/canopy-ui.git
+      type: git
+      passwordSecret:
+        key: password
+        name: git-auth
+      usernameSecret:
+        key: username
+        name: git-auth
+      insecure: true
+    - url: https://gitea-gitea.{{ $cluster_domain }}/user{{ $attendee}}/canopy-be.git
       type: git
       passwordSecret:
         key: password

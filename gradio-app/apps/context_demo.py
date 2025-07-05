@@ -4,7 +4,7 @@ import json
 import os
 
 # Get base model URL from environment variable
-BASE_URL = os.getenv('TINY_URL', 'https://tinyllama-1b-cpu-ai501.apps.cluster-gm86c.gm86c.sandbox1062.opentlc.com')
+BASE_URL = os.getenv('TINY_URL', 'https://tinyllama-1b-cpu')
 # Get model name from environment variable
 MODEL_NAME = os.getenv('TINY_MODEL_NAME', 'tinyllama')
 
@@ -67,9 +67,7 @@ def create_context_demo():
     """) as interface:
         with gr.Column():
             gr.Markdown(
-                """# Limited Context Demo
-                This demo shows how a small context window (64 tokens) affects the model's responses.
-                Try asking a complex question and see how the response gets cut off.""",
+                """# Limited Context Demo""",
                 elem_classes="contain"
             )
             
