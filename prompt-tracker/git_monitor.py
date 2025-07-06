@@ -170,7 +170,11 @@ class GitMonitor:
                             'usecase': key,
                             'model': value.get('model', ''),
                             'prompt': value.get('prompt', '').strip(),
-                            'enabled': value.get('enabled', True)
+                            'enabled': value.get('enabled', True),
+                            'temperature': value.get('temperature'),
+                            'top_k': value.get('top_k'),
+                            'top_p': value.get('top_p'),
+                            'max_tokens': value.get('max_tokens')
                         })
                 return results
         except Exception as e:
@@ -211,6 +215,10 @@ class GitMonitor:
                         'model': item['model'],
                         'prompt': item['prompt'],
                         'enabled': item['enabled'],
+                        'temperature': item['temperature'],
+                        'top_k': item['top_k'],
+                        'top_p': item['top_p'],
+                        'max_tokens': item['max_tokens'],
                         'commit_hash': commit_hash,
                         'commit_date': commit_info['date'],
                         'commit_message': commit_info['message'],
