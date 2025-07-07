@@ -192,7 +192,11 @@ class GitMonitor:
             commits = self.get_git_log(file_path)
             environment = "test" if "test" in file_path else "prod"
             
-            for commit_line in commits:
+            # Track the last known state of each use case
+            usecase_last_state = {}
+            
+            # Process commits in reverse order (oldest first) to build proper history
+            for commit_line in reversed(commits):
                 if not commit_line.strip():
                     continue
                     
@@ -208,24 +212,69 @@ class GitMonitor:
                 
                 yaml_data = self.parse_yaml_content(content)
                 
+                # For each use case in this commit, check if it actually changed
                 for item in yaml_data:
-                    self.changes_history.append({
-                        'environment': environment,
-                        'usecase': item['usecase'],
+                    usecase = item['usecase']
+                    current_data = {
                         'model': item['model'],
                         'prompt': item['prompt'],
                         'enabled': item['enabled'],
                         'temperature': item['temperature'],
                         'top_k': item['top_k'],
                         'top_p': item['top_p'],
-                        'max_tokens': item['max_tokens'],
+                        'max_tokens': item['max_tokens']
+                    }
+                    
+                    # Check if this use case actually changed from its last known state
+                    has_changed = True
+                    if usecase in usecase_last_state:
+                        has_changed = current_data != usecase_last_state[usecase]['data']
+                        # Debug logging
+                        if has_changed:
+                            logging.info(f"Change detected for {usecase} in commit {commit_hash}")
+                        else:
+                            logging.info(f"No change for {usecase} in commit {commit_hash}, skipping")
+                    else:
+                        logging.info(f"First occurrence of {usecase} in commit {commit_hash}")
+                    
+                    # Only add to history if it changed (or it's the first time we see this use case)
+                    if has_changed:
+                        # Check for duplicates before adding
+                        duplicate_exists = any(
+                            change['commit_hash'] == commit_hash and 
+                            change['usecase'] == usecase and 
+                            change['environment'] == environment
+                            for change in self.changes_history
+                        )
+                        
+                        if not duplicate_exists:
+                            self.changes_history.append({
+                                'environment': environment,
+                                'usecase': item['usecase'],
+                                'model': item['model'],
+                                'prompt': item['prompt'],
+                                'enabled': item['enabled'],
+                                'temperature': item['temperature'],
+                                'top_k': item['top_k'],
+                                'top_p': item['top_p'],
+                                'max_tokens': item['max_tokens'],
+                                'commit_hash': commit_hash,
+                                'commit_date': commit_info['date'],
+                                'commit_message': commit_info['message'],
+                                'commit_author_name': commit_info['author_name'],
+                                'commit_author_email': commit_info['author_email'],
+                                'file_path': file_path
+                            })
+                            logging.info(f"Added change entry for {usecase} in commit {commit_hash}")
+                        else:
+                            logging.warning(f"Duplicate entry detected for {usecase} in commit {commit_hash}, skipping")
+                    
+                    # Update the last known state for this use case
+                    usecase_last_state[usecase] = {
+                        'data': current_data,
                         'commit_hash': commit_hash,
-                        'commit_date': commit_info['date'],
-                        'commit_message': commit_info['message'],
-                        'commit_author_name': commit_info['author_name'],
-                        'commit_author_email': commit_info['author_email'],
-                        'file_path': file_path
-                    })
+                        'commit_date': commit_info['date']
+                    }
         
         # Sort by commit date (newest first)
         self.changes_history.sort(key=lambda x: x['commit_date'], reverse=True)
@@ -288,6 +337,10 @@ def get_or_create_monitor(config_key):
         # Scan history immediately for URL parameter configurations
         if config and config.get('git_repo_url'):
             monitor.scan_history()
+            # Start background monitoring thread for this configuration
+            monitor_thread = Thread(target=monitor.monitor_loop, daemon=True)
+            monitor_thread.start()
+            logging.info(f"Started monitoring thread for config: {config_key}")
         monitors[config_key] = monitor
     return monitors[config_key]
 
@@ -315,6 +368,18 @@ def refresh_changes():
     """API endpoint to manually refresh changes"""
     config_key = f"{request.args.get('git_repo_url', '')}-{request.args.get('git_branch', 'main')}"
     monitor = get_or_create_monitor(config_key)
+    
+    # Pull latest changes from repository
+    if monitor.git_repo_url:
+        try:
+            if monitor._git_pull():
+                logging.info("Successfully pulled latest changes")
+            else:
+                logging.warning("Failed to pull latest changes")
+        except Exception as e:
+            logging.error(f"Error pulling changes: {e}")
+    
+    # Scan history for changes
     monitor.scan_history()
     return jsonify({"status": "refreshed", "count": len(monitor.changes_history)})
 
