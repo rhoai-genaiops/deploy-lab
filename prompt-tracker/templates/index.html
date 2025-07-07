@@ -493,8 +493,7 @@
             card.className = 'card';
             
             const envClass = change.environment === 'test' ? 'env-test' : 'env-prod';
-            const enabledClass = change.enabled ? 'enabled-true' : 'enabled-false';
-            const enabledText = change.enabled ? 'Enabled' : 'Disabled';
+            const enabledBadge = change.show_enabled ? '<span class="enabled-badge enabled-true" style="margin-left: 10px;">Enabled</span>' : '';
             
             // Find previous version for diff (same environment and usecase)
             let filteredChanges = allChanges;
@@ -517,7 +516,7 @@
                     <div class="card-title">
                         <strong>${change.usecase}</strong>
                         <span class="env-badge ${envClass}" style="margin-left: 10px;">${change.environment.toUpperCase()}</span>
-                        <span class="enabled-badge ${enabledClass}" style="margin-left: 10px;">${enabledText}</span>
+                        ${enabledBadge}
                         <span style="margin-left: 10px; font-size: 12px; color: #666;">${formatDate(change.commit_date)}</span>
                     </div>
                     <span class="collapse-icon" id="icon-${cardId}">▼</span>
@@ -559,7 +558,10 @@
                     <div class="card-row">
                         <div class="card-label">Eval Results</div>
                         <div class="card-value">
-                            <em style="color: #666;">No evaluation results available yet.</em>
+                            ${change.has_eval_results ? 
+                                `<a href="${change.eval_results_url}" target="_blank" style="display: inline-block; background-color: #007bff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 14px;">📊 View Results</a>` : 
+                                `<div style="font-style: italic; color: #666;">No evaluation results available yet</div>`
+                            }
                         </div>
                     </div>
                 </div>
@@ -723,7 +725,11 @@
                 
                 if (result.status === 'refreshed') {
                     await loadData();
-                    showStatus(`Refreshed! Found ${result.count} changes`);
+                    let message = `Refreshed! Found ${result.count} changes`;
+                    if (result.s3_updated > 0) {
+                        message += `, updated ${result.s3_updated} S3 results`;
+                    }
+                    showStatus(message);
                 } else {
                     showStatus('Error refreshing data', true);
                 }
