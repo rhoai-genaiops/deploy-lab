@@ -47,12 +47,20 @@ class GitMonitor:
             self.monitor_interval = int(os.getenv('MONITOR_INTERVAL', '30'))
             
         # S3 configuration for evaluation results
-        self.s3_endpoint = os.getenv('S3_ENDPOINT', '')
-        self.s3_access_key = os.getenv('S3_ACCESS_KEY', '')
-        self.s3_secret_key = os.getenv('S3_SECRET_KEY', '')
-        self.s3_bucket_name = os.getenv('S3_BUCKET_NAME', 'results')
-        self.s3_ui_url = os.getenv('S3_UI_URL', '')
-        self.s3_refresh_interval = int(os.getenv('S3_REFRESH_INTERVAL', '60'))
+        if config:
+            self.s3_endpoint = config.get('s3_endpoint', os.getenv('S3_ENDPOINT', ''))
+            self.s3_access_key = config.get('s3_access_key', os.getenv('S3_ACCESS_KEY', ''))
+            self.s3_secret_key = config.get('s3_secret_key', os.getenv('S3_SECRET_KEY', ''))
+            self.s3_bucket_name = config.get('s3_bucket_name', os.getenv('S3_BUCKET_NAME', 'results'))
+            self.s3_ui_url = config.get('s3_ui_url', os.getenv('S3_UI_URL', ''))
+            self.s3_refresh_interval = int(config.get('s3_refresh_interval', os.getenv('S3_REFRESH_INTERVAL', '60')))
+        else:
+            self.s3_endpoint = os.getenv('S3_ENDPOINT', '')
+            self.s3_access_key = os.getenv('S3_ACCESS_KEY', '')
+            self.s3_secret_key = os.getenv('S3_SECRET_KEY', '')
+            self.s3_bucket_name = os.getenv('S3_BUCKET_NAME', 'results')
+            self.s3_ui_url = os.getenv('S3_UI_URL', '')
+            self.s3_refresh_interval = int(os.getenv('S3_REFRESH_INTERVAL', '60'))
         
         # Initialize S3 client if credentials are provided
         self.s3_client = None
@@ -472,6 +480,20 @@ def get_or_create_monitor(config_key):
             config['git_branch'] = request.args.get('git_branch')
         if request.args.get('monitor_interval'):
             config['monitor_interval'] = request.args.get('monitor_interval')
+        
+        # Extract S3 configuration from URL parameters
+        if request.args.get('s3_endpoint'):
+            config['s3_endpoint'] = request.args.get('s3_endpoint')
+        if request.args.get('s3_access_key'):
+            config['s3_access_key'] = request.args.get('s3_access_key')
+        if request.args.get('s3_secret_key'):
+            config['s3_secret_key'] = request.args.get('s3_secret_key')
+        if request.args.get('s3_bucket_name'):
+            config['s3_bucket_name'] = request.args.get('s3_bucket_name')
+        if request.args.get('s3_ui_url'):
+            config['s3_ui_url'] = request.args.get('s3_ui_url')
+        if request.args.get('s3_refresh_interval'):
+            config['s3_refresh_interval'] = request.args.get('s3_refresh_interval')
         
         monitor = GitMonitor(config if config else None)
         # Scan history immediately for URL parameter configurations
