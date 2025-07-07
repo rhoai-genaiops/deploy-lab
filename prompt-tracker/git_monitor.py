@@ -284,7 +284,11 @@ def get_or_create_monitor(config_key):
         if request.args.get('monitor_interval'):
             config['monitor_interval'] = request.args.get('monitor_interval')
         
-        monitors[config_key] = GitMonitor(config if config else None)
+        monitor = GitMonitor(config if config else None)
+        # Scan history immediately for URL parameter configurations
+        if config and config.get('git_repo_url'):
+            monitor.scan_history()
+        monitors[config_key] = monitor
     return monitors[config_key]
 
 @app.route('/')

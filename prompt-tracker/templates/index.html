@@ -676,9 +676,14 @@
             lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()}`;
         }
         
+        function getApiUrl(endpoint) {
+            const params = new URLSearchParams(window.location.search);
+            return `${endpoint}?${params.toString()}`;
+        }
+        
         async function loadData() {
             try {
-                const response = await fetch('/api/changes');
+                const response = await fetch(getApiUrl('/api/changes'));
                 const changes = await response.json();
                 
                 // Debug: Log the first change to see what data we're getting
@@ -713,7 +718,7 @@
             showStatus('Refreshing...');
             
             try {
-                const response = await fetch('/api/refresh');
+                const response = await fetch(getApiUrl('/api/refresh'));
                 const result = await response.json();
                 
                 if (result.status === 'refreshed') {
