@@ -71,7 +71,8 @@ class GitMonitor:
                     endpoint_url=self.s3_endpoint,
                     aws_access_key_id=self.s3_access_key,
                     aws_secret_access_key=self.s3_secret_key,
-                    region_name='us-east-1'
+                    region_name='us-east-1',
+                    verify=False  # Disable SSL verification for MinIO with self-signed certs
                 )
                 logging.info("S3 client initialized successfully")
             except Exception as e:
@@ -96,12 +97,12 @@ class GitMonitor:
     def _setup_external_repo(self):
         """Set up external Git repository with authentication"""
         try:
-            # Create a temporary directory for the repo
-            repo_dir = os.path.join(tempfile.gettempdir(), "git_monitor_repo")
+            # Create a unique temporary directory for the repo
+            temp_base = tempfile.mkdtemp(prefix="git_monitor_")
+            repo_dir = os.path.join(temp_base, "repo")
             
-            # Clean up existing directory if it exists
-            if os.path.exists(repo_dir):
-                shutil.rmtree(repo_dir)
+            # Ensure the directory exists
+            os.makedirs(repo_dir, exist_ok=True)
             
             # Construct authenticated URL if credentials are provided
             if self.git_username and self.git_password:
@@ -112,14 +113,34 @@ class GitMonitor:
                 auth_url = self.git_repo_url
                 logging.info(f"Using non-authenticated URL for repository")
             
-            # Clone the repository
+            # Clone the repository with better error handling
             logging.info(f"Cloning repository to {repo_dir}")
             clone_cmd = ["git", "clone", "-b", self.git_branch, auth_url, repo_dir]
-            result = subprocess.run(clone_cmd, capture_output=True, text=True)
+            
+            # Set environment variables for git to avoid config issues
+            env = os.environ.copy()
+            env['GIT_CONFIG_NOSYSTEM'] = '1'
+            env['HOME'] = tempfile.gettempdir()
+            
+            result = subprocess.run(clone_cmd, capture_output=True, text=True, env=env, cwd=temp_base)
             
             if result.returncode != 0:
                 logging.error(f"Failed to clone repository: {result.stderr}")
-                raise Exception(f"Git clone failed: {result.stderr}")
+                # Try fallback approach - clone without specifying branch first
+                logging.info("Trying fallback clone without branch specification")
+                fallback_cmd = ["git", "clone", auth_url, repo_dir]
+                result = subprocess.run(fallback_cmd, capture_output=True, text=True, env=env, cwd=temp_base)
+                
+                if result.returncode != 0:
+                    logging.error(f"Fallback clone also failed: {result.stderr}")
+                    raise Exception(f"Git clone failed: {result.stderr}")
+                
+                # Now checkout the desired branch
+                if self.git_branch != "main":
+                    checkout_cmd = ["git", "checkout", self.git_branch]
+                    result = subprocess.run(checkout_cmd, capture_output=True, text=True, env=env, cwd=repo_dir)
+                    if result.returncode != 0:
+                        logging.warning(f"Failed to checkout branch {self.git_branch}: {result.stderr}")
             
             logging.info(f"Successfully cloned repository to {repo_dir}")
             return repo_dir
@@ -130,10 +151,15 @@ class GitMonitor:
     
     def _git_pull(self):
         """Pull latest changes from remote repository"""
+        # Set environment variables for git to avoid config issues
+        env = os.environ.copy()
+        env['GIT_CONFIG_NOSYSTEM'] = '1'
+        env['HOME'] = tempfile.gettempdir()
+        
         if not self.git_repo_url:
             # For local repo, just fetch
             try:
-                subprocess.run(["git", "fetch"], cwd=self.repo_path, capture_output=True, check=True)
+                subprocess.run(["git", "fetch"], cwd=self.repo_path, capture_output=True, check=True, env=env)
                 return True
             except subprocess.CalledProcessError as e:
                 logging.error(f"Git fetch failed: {e}")
@@ -142,10 +168,20 @@ class GitMonitor:
         try:
             # For external repo, pull latest changes
             pull_cmd = ["git", "pull", "origin", self.git_branch]
-            result = subprocess.run(pull_cmd, cwd=self.repo_path, capture_output=True, text=True)
+            result = subprocess.run(pull_cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
             
             if result.returncode != 0:
                 logging.error(f"Git pull failed: {result.stderr}")
+                # Try a simple fetch and reset as fallback
+                logging.info("Trying fallback fetch and reset")
+                fetch_cmd = ["git", "fetch", "origin", self.git_branch]
+                result = subprocess.run(fetch_cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
+                if result.returncode == 0:
+                    reset_cmd = ["git", "reset", "--hard", f"origin/{self.git_branch}"]
+                    result = subprocess.run(reset_cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
+                    if result.returncode == 0:
+                        logging.info("Successfully updated using fetch and reset")
+                        return True
                 return False
             
             logging.info("Successfully pulled latest changes")
@@ -158,8 +194,13 @@ class GitMonitor:
     def get_git_log(self, file_path):
         """Get git log for a specific file"""
         try:
+            # Set environment variables for git to avoid config issues
+            env = os.environ.copy()
+            env['GIT_CONFIG_NOSYSTEM'] = '1'
+            env['HOME'] = tempfile.gettempdir()
+            
             cmd = ["git", "log", "--oneline", "--follow", "--", file_path]
-            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True)
+            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
             return result.stdout.strip().split('\n') if result.stdout.strip() else []
         except Exception as e:
             logging.error(f"Error getting git log for {file_path}: {e}")
@@ -168,8 +209,13 @@ class GitMonitor:
     def get_file_content_at_commit(self, commit_hash, file_path):
         """Get file content at specific commit"""
         try:
+            # Set environment variables for git to avoid config issues
+            env = os.environ.copy()
+            env['GIT_CONFIG_NOSYSTEM'] = '1'
+            env['HOME'] = tempfile.gettempdir()
+            
             cmd = ["git", "show", f"{commit_hash}:{file_path}"]
-            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True)
+            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
             return result.stdout if result.returncode == 0 else None
         except Exception as e:
             logging.error(f"Error getting file content at {commit_hash}: {e}")
@@ -178,8 +224,13 @@ class GitMonitor:
     def get_commit_info(self, commit_hash):
         """Get commit information"""
         try:
+            # Set environment variables for git to avoid config issues
+            env = os.environ.copy()
+            env['GIT_CONFIG_NOSYSTEM'] = '1'
+            env['HOME'] = tempfile.gettempdir()
+            
             cmd = ["git", "show", "--format=%H|%ai|%s|%an|%ae", "--no-patch", commit_hash]
-            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True)
+            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
             if result.returncode == 0:
                 parts = result.stdout.strip().split('|')
                 return {
@@ -323,6 +374,10 @@ class GitMonitor:
         # Set enabled flag only for the latest prompt of each usecase/environment combination
         self._set_enabled_flags()
         
+        # Force refresh S3 status to catch any recently uploaded files
+        if self.s3_client and self.changes_history:
+            self.refresh_s3_status()
+        
         logging.info(f"Found {len(self.changes_history)} changes in history")
     
     def _set_enabled_flags(self):
@@ -360,12 +415,10 @@ class GitMonitor:
             
             # Check if file exists using head_object
             self.s3_client.head_object(Bucket=self.s3_bucket_name, Key=s3_key)
-            logging.info(f"S3 file exists: {s3_key}")
             return True
             
         except ClientError as e:
             if e.response["Error"]["Code"] == "404":
-                logging.debug(f"S3 file does not exist: {s3_key}")
                 return False
             else:
                 logging.error(f"Error checking S3 file {s3_key}: {e}")
@@ -383,13 +436,40 @@ class GitMonitor:
         s3_key = f"{commit_hash}/{usecase}_results.html"
         return f"{self.s3_ui_url}/browser/{self.s3_bucket_name}/{s3_key}"
     
+    def list_s3_files(self, prefix=""):
+        """List all files in S3 bucket with optional prefix"""
+        if not self.s3_client:
+            return []
+            
+        try:
+            response = self.s3_client.list_objects_v2(
+                Bucket=self.s3_bucket_name,
+                Prefix=prefix
+            )
+            
+            files = []
+            if 'Contents' in response:
+                for obj in response['Contents']:
+                    files.append(obj['Key'])
+            
+            return files
+            
+        except ClientError as e:
+            logging.error(f"Error listing S3 files: {e}")
+            return []
+        except Exception as e:
+            logging.error(f"Unexpected error listing S3 files: {e}")
+            return []
+    
     def refresh_s3_status(self):
         """Refresh S3 evaluation results status for all existing changes"""
         if not self.s3_client:
             logging.warning("S3 client not available, skipping S3 status refresh")
-            return
+            return 0
             
-        logging.info("Refreshing S3 evaluation results status...")
+        # List all files to check availability
+        all_files = self.list_s3_files()
+        
         updated_count = 0
         
         for change in self.changes_history:
@@ -405,9 +485,6 @@ class GitMonitor:
                 change['has_eval_results'] = has_eval_results
                 change['eval_results_url'] = eval_results_url
                 updated_count += 1
-                logging.info(f"Updated S3 status for {usecase} ({commit_hash[:7]}): {has_eval_results}")
-        
-        logging.info(f"S3 status refresh completed. Updated {updated_count} entries.")
         return updated_count
     
     def cleanup(self):
@@ -422,8 +499,13 @@ class GitMonitor:
     def check_for_new_commits(self):
         """Check if there are new commits"""
         try:
+            # Set environment variables for git to avoid config issues
+            env = os.environ.copy()
+            env['GIT_CONFIG_NOSYSTEM'] = '1'
+            env['HOME'] = tempfile.gettempdir()
+            
             cmd = ["git", "rev-parse", "HEAD"]
-            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True)
+            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
             current_hash = result.stdout.strip()
             
             if self.last_commit_hash != current_hash:
@@ -464,6 +546,28 @@ class GitMonitor:
 
 # Global monitor instances (can be configured per request)
 monitors = {}
+
+# User-based configuration templates
+USER_CONFIG_TEMPLATE = {
+    'git_repo_url': 'https://gitea-gitea.{cluster_domain}/{user}/canopy-be.git',
+    'git_username': '{user}',
+    'git_password': 'thisisthepassword',
+    'git_branch': 'main',
+    'monitor_interval': '30',
+    's3_endpoint': 'https://minio-api-{user}-toolings.{cluster_domain}',
+    's3_access_key': '{user}',
+    's3_secret_key': 'thisisthepassword',
+    's3_bucket_name': 'results',
+    's3_ui_url': 'https://minio-ui-{user}-toolings.{cluster_domain}',
+    's3_refresh_interval': '60'
+}
+
+def get_user_config(user, cluster_domain):
+    """Generate user-specific configuration"""
+    config = {}
+    for key, value in USER_CONFIG_TEMPLATE.items():
+        config[key] = value.format(user=user, cluster_domain=cluster_domain)
+    return config
 
 def get_or_create_monitor(config_key):
     """Get or create a monitor instance based on configuration"""
@@ -555,6 +659,182 @@ def refresh_changes():
         "count": len(monitor.changes_history),
         "s3_updated": s3_updated_count
     })
+
+@app.route('/user<int:user_id>/<cluster_domain>')
+def user_config(user_id, cluster_domain):
+    """User-specific configuration endpoint with cluster domain"""
+    user = f"user{user_id}"
+    config = get_user_config(user, cluster_domain)
+    
+    
+    # Create monitor with user-specific configuration
+    config_key = f"{config['git_repo_url']}-{config['git_branch']}"
+    
+    if config_key not in monitors:
+        monitor = GitMonitor(config)
+        monitor.scan_history()
+        # Start background monitoring thread
+        monitor_thread = Thread(target=monitor.monitor_loop, daemon=True)
+        monitor_thread.start()
+        logging.info(f"Started monitoring thread for user: {user} on cluster: {cluster_domain}")
+        monitors[config_key] = monitor
+    
+    return render_template('index.html', config=config)
+
+@app.route('/user<int:user_id>')
+def user_config_legacy(user_id):
+    """Legacy user-specific configuration endpoint (backwards compatibility)"""
+    # Default cluster domain for backwards compatibility
+    cluster_domain = "apps.cluster-gm86c.gm86c.sandbox1062.opentlc.com"
+    return user_config(user_id, cluster_domain)
+
+@app.route('/user<int:user_id>/<cluster_domain>/api/changes')
+def get_user_changes(user_id, cluster_domain):
+    """API endpoint to get changes for specific user with cluster domain"""
+    user = f"user{user_id}"
+    config = get_user_config(user, cluster_domain)
+    config_key = f"{config['git_repo_url']}-{config['git_branch']}"
+    
+    if config_key not in monitors:
+        monitor = GitMonitor(config)
+        monitor.scan_history()
+        # Start background monitoring thread
+        monitor_thread = Thread(target=monitor.monitor_loop, daemon=True)
+        monitor_thread.start()
+        logging.info(f"Started monitoring thread for user: {user} on cluster: {cluster_domain}")
+        monitors[config_key] = monitor
+    
+    monitor = monitors[config_key]
+    return jsonify(monitor.changes_history)
+
+@app.route('/user<int:user_id>/api/changes')
+def get_user_changes_legacy(user_id):
+    """Legacy API endpoint to get changes for specific user (backwards compatibility)"""
+    cluster_domain = "apps.cluster-gm86c.gm86c.sandbox1062.opentlc.com"
+    return get_user_changes(user_id, cluster_domain)
+
+@app.route('/user<int:user_id>/<cluster_domain>/api/refresh')
+def refresh_user_changes(user_id, cluster_domain):
+    """API endpoint to manually refresh changes for specific user with cluster domain"""
+    user = f"user{user_id}"
+    config = get_user_config(user, cluster_domain)
+    config_key = f"{config['git_repo_url']}-{config['git_branch']}"
+    
+    if config_key not in monitors:
+        monitor = GitMonitor(config)
+        monitors[config_key] = monitor
+    else:
+        monitor = monitors[config_key]
+    
+    # Pull latest changes from repository
+    if monitor.git_repo_url:
+        try:
+            if monitor._git_pull():
+                logging.info("Successfully pulled latest changes")
+            else:
+                logging.warning("Failed to pull latest changes")
+        except Exception as e:
+            logging.error(f"Error pulling changes: {e}")
+    
+    # Scan history for changes
+    monitor.scan_history()
+    
+    # Also refresh S3 status if S3 client is available
+    s3_updated_count = 0
+    if monitor.s3_client:
+        s3_updated_count = monitor.refresh_s3_status()
+        monitor.last_s3_refresh = time.time()
+    
+    return jsonify({
+        "status": "refreshed", 
+        "count": len(monitor.changes_history),
+        "s3_updated": s3_updated_count
+    })
+
+@app.route('/user<int:user_id>/api/refresh')
+def refresh_user_changes_legacy(user_id):
+    """Legacy API endpoint to manually refresh changes for specific user (backwards compatibility)"""
+    cluster_domain = "apps.cluster-gm86c.gm86c.sandbox1062.opentlc.com"
+    return refresh_user_changes(user_id, cluster_domain)
+
+@app.route('/user<int:user_id>/<cluster_domain>/api/s3-debug')
+def debug_s3_connection(user_id, cluster_domain):
+    """Debug S3 connection and file listing"""
+    user = f"user{user_id}"
+    config = get_user_config(user, cluster_domain)
+    config_key = f"{config['git_repo_url']}-{config['git_branch']}"
+    
+    if config_key not in monitors:
+        monitor = GitMonitor(config)
+        monitors[config_key] = monitor
+    else:
+        monitor = monitors[config_key]
+    
+    debug_info = {
+        "s3_endpoint": monitor.s3_endpoint,
+        "s3_bucket_name": monitor.s3_bucket_name,
+        "s3_ui_url": monitor.s3_ui_url,
+        "s3_client_initialized": monitor.s3_client is not None,
+        "s3_files": [],
+        "error": None
+    }
+    
+    if monitor.s3_client:
+        try:
+            # Test basic connectivity
+            debug_info["s3_files"] = monitor.list_s3_files()
+            debug_info["total_files"] = len(debug_info["s3_files"])
+            
+            # Test specific file patterns
+            debug_info["file_patterns"] = {}
+            for file_key in debug_info["s3_files"]:
+                if "_results.html" in file_key:
+                    debug_info["file_patterns"][file_key] = "evaluation_result"
+                    
+        except Exception as e:
+            debug_info["error"] = str(e)
+    else:
+        debug_info["error"] = "S3 client not initialized"
+    
+    return jsonify(debug_info)
+
+@app.route('/user<int:user_id>/api/s3-debug')
+def debug_s3_connection_legacy(user_id):
+    """Legacy debug S3 connection endpoint"""
+    cluster_domain = "apps.cluster-gm86c.gm86c.sandbox1062.opentlc.com"
+    return debug_s3_connection(user_id, cluster_domain)
+
+@app.route('/user<int:user_id>/<cluster_domain>/api/s3-refresh')
+def force_s3_refresh(user_id, cluster_domain):
+    """Force S3 status refresh for user"""
+    user = f"user{user_id}"
+    config = get_user_config(user, cluster_domain)
+    config_key = f"{config['git_repo_url']}-{config['git_branch']}"
+    
+    if config_key not in monitors:
+        return jsonify({"error": "Monitor not found for this user"}), 404
+    
+    monitor = monitors[config_key]
+    
+    if not monitor.s3_client:
+        return jsonify({"error": "S3 client not initialized"}), 400
+    
+    # Force refresh S3 status
+    updated_count = monitor.refresh_s3_status()
+    monitor.last_s3_refresh = time.time()
+    
+    return jsonify({
+        "status": "success",
+        "message": f"S3 refresh completed",
+        "updated_count": updated_count,
+        "total_changes": len(monitor.changes_history)
+    })
+
+@app.route('/user<int:user_id>/api/s3-refresh')
+def force_s3_refresh_legacy(user_id):
+    """Legacy force S3 refresh endpoint"""
+    cluster_domain = "apps.cluster-gm86c.gm86c.sandbox1062.opentlc.com"
+    return force_s3_refresh(user_id, cluster_domain)
 
 
 if __name__ == '__main__':

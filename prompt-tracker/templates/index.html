@@ -680,6 +680,14 @@
         
         function getApiUrl(endpoint) {
             const params = new URLSearchParams(window.location.search);
+            const currentPath = window.location.pathname;
+            
+            // If we're on a user-specific URL, use the user-specific API endpoints
+            if (currentPath.includes('/user')) {
+                return `${currentPath}${endpoint}?${params.toString()}`;
+            }
+            
+            // Otherwise use the regular API endpoints
             return `${endpoint}?${params.toString()}`;
         }
         
