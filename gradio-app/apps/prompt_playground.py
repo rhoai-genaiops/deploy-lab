@@ -79,9 +79,9 @@ def create_prompt_playground():
             with gr.Column(scale=1):
                 model_name = gr.Textbox(label="Model Name", placeholder="tinyllama")
                 model_url = gr.Textbox(label="Model API URL", placeholder="https://api.example.com/v1/chat/completions")
-                system_prompt = gr.Textbox(label="System Prompt", value="You are a helpful assistant.", lines=3)
-                user_prompt = gr.Textbox(label="User Prompt", placeholder="Enter your question...", lines=3)
-                
+                system_prompt = gr.Textbox(label="System Prompt", value="Write me an exquisitely long poem about the following topic: ", lines=3)
+                user_prompt = gr.Textbox(label="User Prompt", value="Making a cup of tea is easy. First, boil some water. Then, place a tea bag in a cup. Pour the hot water over the tea bag. Let it steep for a few minutes. After that, take out the tea bag. You can add sugar or milk if you like. Now the tea is ready to drink.", lines=3)
+
                 max_tokens = gr.Slider(label="Max Tokens", minimum=10, maximum=2048, value=100, step=10)
                 temperature = gr.Slider(label="Temperature", minimum=0.0, maximum=1.0, value=0.7, step=0.1)
                     
@@ -111,7 +111,7 @@ def create_prompt_playground():
             def add_to_history_and_chat(history, model_name, model_url, system_prompt, user_prompt, max_tokens, temperature):
                 # Add to history first
                 new_entry = {
-                    "system_prompt": system_prompt or "You are a helpful assistant.",
+                    "system_prompt": system_prompt or "Write me an exquisitely long poem about the following topic: ",
                     "user_prompt": user_prompt
                 }
                 updated_history = history + [new_entry]
