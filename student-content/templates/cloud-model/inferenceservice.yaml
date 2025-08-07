@@ -70,7 +70,7 @@ spec:
       env:
         - name: VLLM_CONFIG_ROOT
           value: /tmp
-      image: 'quay.io/modh/vllm@sha256:56aa86c6ed6ba6cc9557a8583ff9d4ee535193f6cda030bd1268064bc70120e3'
+      image: 'quay.io/modh/vllm:rhoai-2.19-cuda'
       name: kserve-container
       ports:
         - containerPort: 8080
