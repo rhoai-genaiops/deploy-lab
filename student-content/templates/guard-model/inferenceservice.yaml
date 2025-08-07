@@ -1,16 +1,3 @@
-kind: Secret
-apiVersion: v1
-metadata:
-  name: llama-guard-3-1b
-  labels:
-    opendatahub.io/dashboard: 'true'
-  annotations:
-    opendatahub.io/connection-type-ref: uri-v1
-    openshift.io/description: ''
-    openshift.io/display-name: llama-guard-3-1b
-data:
-  URI: b2NpOi8vcXVheS5pby9yaC1haXNlcnZpY2VzLWJ1L2xsYW1hLWd1YXJkLTMtMWItbW9kZWxjYXI6Mi4wLjAK
-type: Opaque
 ---
 apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
@@ -19,6 +6,7 @@ metadata:
     openshift.io/display-name: llama-guard-3-1b
     serving.kserve.io/deploymentMode: RawDeployment
   name: llama-guard-3-1b
+  namespace: ai501
   labels:
     opendatahub.io/dashboard: 'true'
 spec:
@@ -56,6 +44,7 @@ metadata:
     opendatahub.io/template-name: vllm-runtime-rhoai-221
     openshift.io/display-name: llama-guard-3-1b
   name: llama-guard-3-1b
+  namespace: ai501
   labels:
     opendatahub.io/dashboard: 'true'
 spec:
@@ -101,6 +90,7 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: llama-guard-3-1b
+  namespace: ai501
   labels:
     app: llama-guard-3-1b
 spec:
