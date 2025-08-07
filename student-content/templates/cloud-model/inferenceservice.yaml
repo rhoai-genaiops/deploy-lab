@@ -70,8 +70,7 @@ spec:
       env:
         - name: VLLM_CONFIG_ROOT
           value: /tmp
-      imageID: 'quay.io/rh-aiservices-bu/vllm-cpu-openai-ubi9@sha256:ada6b3ba98829eb81ae4f89364d9b431c0222671eafb9a04aa16f31628536af2'
-      image: 'quay.io/rh-aiservices-bu/vllm-cpu-openai-ubi9:0.3'
+      image: 'quay.io/modh/vllm@sha256:56aa86c6ed6ba6cc9557a8583ff9d4ee535193f6cda030bd1268064bc70120e3'
       name: kserve-container
       ports:
         - containerPort: 8080
