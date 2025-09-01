@@ -6,3 +6,4 @@ attendees: 10
 minio:
   buckets:
     - name: pipeline
+    - name: test-results
