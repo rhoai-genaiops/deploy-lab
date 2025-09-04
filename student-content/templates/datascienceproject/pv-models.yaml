@@ -1,18 +1,18 @@
-{{ $attendees := (add1 .Values.attendees | int) }}
-{{- range $attendee := untilStep 1 $attendees 1 }}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: canopy-model-pvc
-  namespace: user{{ $attendee }}-canopy
-  annotations:
-    volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
-spec:
-  resources:
-    requests:
-      storage: 3Gi
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteOnce
-{{- end }}
+# {{ $attendees := (add1 .Values.attendees | int) }}
+# {{- range $attendee := untilStep 1 $attendees 1 }}
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: canopy-model-pvc
+#   namespace: user{{ $attendee }}-canopy
+#   annotations:
+#     volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
+# spec:
+#   resources:
+#     requests:
+#       storage: 3Gi
+#   volumeMode: Filesystem
+#   accessModes:
+#     - ReadWriteOnce
+# {{- end }}
