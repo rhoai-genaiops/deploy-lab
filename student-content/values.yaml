@@ -1,7 +1,7 @@
 ---
-cluster_domain: apps.cluster-bla.bla.sandbox1062.opentlc.com
+cluster_domain: apps.cluster-9vlvt.9vlvt.sandbox2921.opentlc.com
 modelName: "llama32"
-attendees: 10
+attendees: 5
 
 minio:
   buckets:
