@@ -42,4 +42,38 @@ subjects:
 - kind: User
   name: user{{ $attendee }}
   apiGroup: rbac.authorization.k8s.io
+---
+# for llama stack TODO: check if needed
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: llama-stack-user{{ $attendee }}-role
+  namespace: user{{ $attendee }}-canopy
+rules:
+- apiGroups:
+  - "llamastack.io"
+  resources:
+  - llamastackdistributions
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: llama-stack-user{{ $attendee }}-rolebinding
+  namespace: user{{ $attendee }}-canopy
+subjects:
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: user{{ $attendee }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: llama-stack-user{{ $attendee }}-role
 {{- end }}
