@@ -4,11 +4,11 @@ import json
 import os
 
 # Get base model URL from environment variable
-BASE_URL = os.getenv('MODEL_URL', 'http://localhost:8080')
+BASE_URL = os.getenv('TINY_URL', 'https://tinyllama-1b-cpu')
 # Get model name from environment variable
-MODEL_NAME = os.getenv('MODEL_NAME', 'gpt-3.5-turbo')
+MODEL_NAME = os.getenv('TINY_MODEL_NAME', 'tinyllama')
 
-def chat_with_model_stream(message, max_tokens=30):
+def chat_with_model_stream(message, max_tokens=2048):
     if not message:
         yield "Please provide a message."
         return
@@ -30,7 +30,7 @@ def chat_with_model_stream(message, max_tokens=30):
             "Content-Type": "application/json",
         }
 
-        with requests.post(model_url, json=payload, headers=headers, stream=True, timeout=30) as response:
+        with requests.post(model_url, json=payload, headers=headers, stream=True, timeout=60) as response:
             if response.status_code != 200:
                 yield f"Error {response.status_code}: {response.text}"
                 return
@@ -57,7 +57,7 @@ def chat_with_model_stream(message, max_tokens=30):
     except Exception as e:
         yield f"An error occurred: {str(e)}"
 
-def create_context_demo():
+def create_max_length_demo():
     with gr.Blocks(css="""
         .gradio-container {width: 800px !important; margin: 0 !important;}
         .contain {max-width: 800px !important;}
@@ -67,7 +67,9 @@ def create_context_demo():
     """) as interface:
         with gr.Column():
             gr.Markdown(
-                """# Limited Context Demo""",
+                """# Max Model Length Demo
+                This demo showcases the maximum output length the model can generate.
+                The model is configured with a low max_tokens value for demonstration purposes.""",
                 elem_classes="contain"
             )
             
@@ -76,25 +78,16 @@ def create_context_demo():
                 elem_id="chatbot",
                 container=False,
                 height=400,
-                type="messages"  # Use new message format
+                type="messages"
             )
             
             msg = gr.Textbox(
                 label="Message",
-                placeholder="Try asking: 'Write a detailed explanation of how neural networks work'",
+                placeholder="Try asking: 'Write a very long and detailed story about a dragon' or 'Explain quantum physics in great detail'",
                 container=False,
                 lines=2,
                 elem_classes="contain",
                 autofocus=True
-            )
-            
-            max_tokens_slider = gr.Slider(
-                minimum=1,
-                maximum=500,
-                value=30,
-                step=1,
-                label="Max Tokens",
-                elem_classes="contain"
             )
             
             submit_btn = gr.Button("Send", variant="primary", elem_classes="contain")
@@ -102,22 +95,22 @@ def create_context_demo():
             def user(message, history):
                 return "", history + [{"role": "user", "content": message}]
 
-            def bot(history, max_tokens):
+            def bot(history):
                 if not history:
                     return history
                 
                 last_message = history[-1]["content"]
                 history.append({"role": "assistant", "content": ""})
                 
-                for chunk in chat_with_model_stream(last_message, max_tokens):
+                for chunk in chat_with_model_stream(last_message, max_tokens=2048):
                     history[-1]["content"] = chunk
                     yield history
 
             submit_event = msg.submit(user, [msg, chatbot], [msg, chatbot]).then(
-                bot, [chatbot, max_tokens_slider], chatbot
+                bot, [chatbot], chatbot
             )
             submit_btn.click(fn=user, inputs=[msg, chatbot], outputs=[msg, chatbot]).then(
-                bot, [chatbot, max_tokens_slider], chatbot
+                bot, [chatbot], chatbot
             )
 
     return interface

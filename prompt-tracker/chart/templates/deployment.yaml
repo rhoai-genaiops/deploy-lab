@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prompt-tracker
+  labels:
+    app: prompt-tracker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prompt-tracker
+  template:
+    metadata:
+      labels:
+        app: prompt-tracker
+    spec:
+      containers:
+      - name: prompt-tracker
+        image: quay.io/rhoai-genaiops/prompt-tracker:0.0.1
+        imagePullPolicy: Always
+        env:
+        - name: MONITOR_INTERVAL
+          value: '30'
+        - name: GIT_BRANCH
+          value: main
+        ports:
+        - containerPort: 7860
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      restartPolicy: Always
