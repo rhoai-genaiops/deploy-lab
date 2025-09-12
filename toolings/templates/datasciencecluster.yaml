@@ -39,6 +39,8 @@ spec:
       managementState: Managed
     modelmeshserving:
       managementState: Managed
+    llamastackoperator:
+      managementState: Managed
     datasciencepipelines:
       managementState: Managed
     trainingoperator:
