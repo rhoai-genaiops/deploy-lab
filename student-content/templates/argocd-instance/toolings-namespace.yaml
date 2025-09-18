@@ -9,7 +9,7 @@ metadata:
     kubernetes.io/metadata.name: user{{ $attendee}}-toolings
     opendatahub.io/dashboard: 'true'
   annotations:
-    openshift.io/description: 'user{{ $attendee}} MLOps Toolings Project'
+    openshift.io/description: 'user{{ $attendee}} GenAIOps Toolings Project'
     openshift.io/display-name: user{{ $attendee}}-toolings
     openshift.io/requester: user{{ $attendee}}
 spec:
