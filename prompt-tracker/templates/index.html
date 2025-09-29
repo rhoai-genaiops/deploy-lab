@@ -558,8 +558,9 @@
                     <div class="card-row">
                         <div class="card-label">Eval Results</div>
                         <div class="card-value">
-                            ${change.has_eval_results ? 
-                                `<a href="${change.eval_results_url}" target="_blank" style="display: inline-block; background-color: #007bff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 14px;">📊 View Results</a>` : 
+                            ${change.has_eval_results ?
+                                `<a href="${getApiUrl(change.eval_direct_url)}" target="_blank" style="display: inline-block; background-color: #007bff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 14px; margin-right: 8px;">📊 View Results</a>
+                                 <a href="${change.eval_results_url}" target="_blank" style="display: inline-block; background-color: #6c757d; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 14px;">📁 MinIO</a>` :
                                 `<div style="font-style: italic; color: #666;">No evaluation results available yet</div>`
                             }
                         </div>

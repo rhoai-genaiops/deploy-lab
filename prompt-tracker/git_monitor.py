@@ -17,7 +17,7 @@ import yaml
 import subprocess
 import json
 from datetime import datetime
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, Response
 from threading import Thread
 import time
 import logging
@@ -51,14 +51,14 @@ class GitMonitor:
             self.s3_endpoint = config.get('s3_endpoint', os.getenv('S3_ENDPOINT', ''))
             self.s3_access_key = config.get('s3_access_key', os.getenv('S3_ACCESS_KEY', ''))
             self.s3_secret_key = config.get('s3_secret_key', os.getenv('S3_SECRET_KEY', ''))
-            self.s3_bucket_name = config.get('s3_bucket_name', os.getenv('S3_BUCKET_NAME', 'results'))
+            self.s3_bucket_name = config.get('s3_bucket_name', os.getenv('S3_BUCKET_NAME', 'test-results'))
             self.s3_ui_url = config.get('s3_ui_url', os.getenv('S3_UI_URL', ''))
             self.s3_refresh_interval = int(config.get('s3_refresh_interval', os.getenv('S3_REFRESH_INTERVAL', '60')))
         else:
             self.s3_endpoint = os.getenv('S3_ENDPOINT', '')
             self.s3_access_key = os.getenv('S3_ACCESS_KEY', '')
             self.s3_secret_key = os.getenv('S3_SECRET_KEY', '')
-            self.s3_bucket_name = os.getenv('S3_BUCKET_NAME', 'results')
+            self.s3_bucket_name = os.getenv('S3_BUCKET_NAME', 'test-results')
             self.s3_ui_url = os.getenv('S3_UI_URL', '')
             self.s3_refresh_interval = int(os.getenv('S3_REFRESH_INTERVAL', '60'))
         
@@ -337,7 +337,9 @@ class GitMonitor:
                             # Check if S3 evaluation results exist for this commit/usecase
                             has_eval_results = self.check_s3_file_exists(commit_hash, item['usecase'])
                             eval_results_url = self.generate_s3_eval_url(commit_hash, item['usecase']) if has_eval_results else None
-                            
+                            # Generate direct view URL for HTML content
+                            eval_direct_url = f"/eval/{commit_hash}/{item['usecase']}" if has_eval_results else None
+
                             self.changes_history.append({
                                 'environment': environment,
                                 'usecase': item['usecase'],
@@ -355,7 +357,8 @@ class GitMonitor:
                                 'commit_author_email': commit_info['author_email'],
                                 'file_path': file_path,
                                 'has_eval_results': has_eval_results,
-                                'eval_results_url': eval_results_url
+                                'eval_results_url': eval_results_url,
+                                'eval_direct_url': eval_direct_url
                             })
                             logging.info(f"Added change entry for {usecase} in commit {commit_hash}")
                         else:
@@ -431,10 +434,30 @@ class GitMonitor:
         """Generate the MinIO UI URL for the evaluation results file"""
         if not self.s3_ui_url:
             return None
-            
+
         # Construct the MinIO UI URL
         s3_key = f"{commit_hash}/{usecase}_results.html"
         return f"{self.s3_ui_url}/browser/{self.s3_bucket_name}/{s3_key}"
+
+    def get_s3_file_content(self, commit_hash, usecase):
+        """Get the content of an S3 file directly"""
+        if not self.s3_client:
+            return None
+
+        try:
+            s3_key = f"{commit_hash}/{usecase}_results.html"
+            response = self.s3_client.get_object(Bucket=self.s3_bucket_name, Key=s3_key)
+            return response['Body'].read().decode('utf-8')
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "NoSuchKey":
+                logging.warning(f"S3 file not found: {s3_key}")
+                return None
+            else:
+                logging.error(f"Error getting S3 file {s3_key}: {e}")
+                return None
+        except Exception as e:
+            logging.error(f"Unexpected error getting S3 file: {e}")
+            return None
     
     def list_s3_files(self, prefix=""):
         """List all files in S3 bucket with optional prefix"""
@@ -479,11 +502,13 @@ class GitMonitor:
             # Check current S3 status
             has_eval_results = self.check_s3_file_exists(commit_hash, usecase)
             eval_results_url = self.generate_s3_eval_url(commit_hash, usecase) if has_eval_results else None
-            
+            eval_direct_url = f"/eval/{commit_hash}/{usecase}" if has_eval_results else None
+
             # Update if status changed
             if change.get('has_eval_results') != has_eval_results:
                 change['has_eval_results'] = has_eval_results
                 change['eval_results_url'] = eval_results_url
+                change['eval_direct_url'] = eval_direct_url
                 updated_count += 1
         return updated_count
     
@@ -557,7 +582,7 @@ USER_CONFIG_TEMPLATE = {
     's3_endpoint': 'https://minio-api-{user}-toolings.{cluster_domain}',
     's3_access_key': '{user}',
     's3_secret_key': 'thisisthepassword',
-    's3_bucket_name': 'results',
+    's3_bucket_name': 'test-results',
     's3_ui_url': 'https://minio-ui-{user}-toolings.{cluster_domain}',
     's3_refresh_interval': '60'
 }
@@ -835,6 +860,36 @@ def force_s3_refresh_legacy(user_id):
     """Legacy force S3 refresh endpoint"""
     cluster_domain = "apps.cluster-gm86c.gm86c.sandbox1062.opentlc.com"
     return force_s3_refresh(user_id, cluster_domain)
+
+@app.route('/user<int:user_id>/<cluster_domain>/eval/<commit_hash>/<usecase>')
+def view_eval_results(user_id, cluster_domain, commit_hash, usecase):
+    """Serve evaluation results HTML directly"""
+    user = f"user{user_id}"
+    config = get_user_config(user, cluster_domain)
+    config_key = f"{config['git_repo_url']}-{config['git_branch']}"
+
+    if config_key not in monitors:
+        monitor = GitMonitor(config)
+        monitors[config_key] = monitor
+    else:
+        monitor = monitors[config_key]
+
+    if not monitor.s3_client:
+        return "S3 client not available", 503
+
+    # Get the HTML content from S3
+    html_content = monitor.get_s3_file_content(commit_hash, usecase)
+
+    if html_content is None:
+        return f"Evaluation results not found for commit {commit_hash} and usecase {usecase}", 404
+
+    return Response(html_content, mimetype='text/html')
+
+@app.route('/user<int:user_id>/eval/<commit_hash>/<usecase>')
+def view_eval_results_legacy(user_id, commit_hash, usecase):
+    """Legacy endpoint for viewing evaluation results"""
+    cluster_domain = "apps.cluster-gm86c.gm86c.sandbox1062.opentlc.com"
+    return view_eval_results(user_id, cluster_domain, commit_hash, usecase)
 
 
 if __name__ == '__main__':
