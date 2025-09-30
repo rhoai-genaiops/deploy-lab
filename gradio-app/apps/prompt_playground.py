@@ -1,6 +1,7 @@
 import gradio as gr
 import requests
 import json
+import os
 
 def chat_with_model_stream(model_name, model_url, system_prompt, user_prompt, max_tokens, temperature):
     if not model_url or not user_prompt:
@@ -11,7 +12,7 @@ def chat_with_model_stream(model_name, model_url, system_prompt, user_prompt, ma
         payload = {
             "model": model_name,
             "messages": [
-                {"role": "system", "content": system_prompt or "You are a helpful assistant."},
+                {"role": "system", "content": system_prompt or "Write me an exquisitely long poem about the following topic: "},
                 {"role": "user", "content": user_prompt}
             ],
             "max_tokens": int(max_tokens),
@@ -77,8 +78,8 @@ def create_prompt_playground():
         with gr.Row():
             # Model Configuration Column
             with gr.Column(scale=1):
-                model_name = gr.Textbox(label="Model Name", placeholder="tinyllama")
-                model_url = gr.Textbox(label="Model API URL", placeholder="https://api.example.com/v1/chat/completions")
+                model_name = gr.Textbox(label="Model Name", value="llama32")
+                model_url = gr.Textbox(label="Model API URL", value=os.getenv("MODEL_URL", "https://api.example.com")+"/v1/chat/completions")
                 system_prompt = gr.Textbox(label="System Prompt", value="Write me an exquisitely long poem about the following topic: ", lines=3)
                 user_prompt = gr.Textbox(label="User Prompt", value="Making a cup of tea is easy. First, boil some water. Then, place a tea bag in a cup. Pour the hot water over the tea bag. Let it steep for a few minutes. After that, take out the tea bag. You can add sugar or milk if you like. Now the tea is ready to drink.", lines=3)
 
