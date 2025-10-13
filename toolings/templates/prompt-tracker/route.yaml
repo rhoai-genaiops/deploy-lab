@@ -3,6 +3,7 @@ kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
   name: prompt-tracker
+  namespace: ai501
 spec:
   path: /
   to:

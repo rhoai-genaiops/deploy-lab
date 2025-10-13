@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: prompt-tracker
+  namespace: ai501
   labels:
     app: prompt-tracker
 spec:
