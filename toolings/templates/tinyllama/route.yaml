@@ -1,0 +1,18 @@
+---
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: tinyllama-1b-cpu
+  namespace: ai501
+spec:
+  to:
+    kind: Service
+    name: tinyllama-1b-cpu-predictor
+    weight: 100
+  port:
+    targetPort: http1
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
