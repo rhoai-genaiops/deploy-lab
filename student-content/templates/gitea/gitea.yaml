@@ -34,6 +34,6 @@ spec:
   - repo: https://github.com/rhoai-genaiops/canopy-be.git 
     name: canopy-be
     private: true
-  - repo: https://github.com/rhoai-genaiops/genaiops-helmcharts.git 
-    name: genaiops-helmcharts
+  - repo: https://github.com/rhoai-genaiops/genaiops-evals.git 
+    name: genaiops-evals
     private: true
