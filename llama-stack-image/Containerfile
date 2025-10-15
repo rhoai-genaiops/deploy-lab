@@ -1,0 +1,4 @@
+FROM quay.io/rhoai-genaiops/llama-stack-vllm-milvus:0.2.11
+RUN mkdir -p /.llama/providers.d/remote/safety
+ADD trusty_fms.yaml /.llama/providers.d/remote/safety/trusty_fms.yaml
+RUN pip install llama-stack-provider-trustyai-fms llama-stack-provider-lmeval 
