@@ -17,7 +17,7 @@ import yaml
 import subprocess
 import json
 from datetime import datetime
-from flask import Flask, render_template, jsonify, request, Response
+from flask import Flask, render_template, jsonify, request, Response, redirect
 from threading import Thread
 import time
 import logging
@@ -122,14 +122,14 @@ class GitMonitor:
             env['GIT_CONFIG_NOSYSTEM'] = '1'
             env['HOME'] = tempfile.gettempdir()
             
-            result = subprocess.run(clone_cmd, capture_output=True, text=True, env=env, cwd=temp_base)
+            result = subprocess.run(clone_cmd, capture_output=True, text=True, env=env, cwd=temp_base, encoding='utf-8', errors='replace')
             
             if result.returncode != 0:
                 logging.error(f"Failed to clone repository: {result.stderr}")
                 # Try fallback approach - clone without specifying branch first
                 logging.info("Trying fallback clone without branch specification")
                 fallback_cmd = ["git", "clone", auth_url, repo_dir]
-                result = subprocess.run(fallback_cmd, capture_output=True, text=True, env=env, cwd=temp_base)
+                result = subprocess.run(fallback_cmd, capture_output=True, text=True, env=env, cwd=temp_base, encoding='utf-8', errors='replace')
                 
                 if result.returncode != 0:
                     logging.error(f"Fallback clone also failed: {result.stderr}")
@@ -138,7 +138,7 @@ class GitMonitor:
                 # Now checkout the desired branch
                 if self.git_branch != "main":
                     checkout_cmd = ["git", "checkout", self.git_branch]
-                    result = subprocess.run(checkout_cmd, capture_output=True, text=True, env=env, cwd=repo_dir)
+                    result = subprocess.run(checkout_cmd, capture_output=True, text=True, env=env, cwd=repo_dir, encoding='utf-8', errors='replace')
                     if result.returncode != 0:
                         logging.warning(f"Failed to checkout branch {self.git_branch}: {result.stderr}")
             
@@ -168,17 +168,17 @@ class GitMonitor:
         try:
             # For external repo, pull latest changes
             pull_cmd = ["git", "pull", "origin", self.git_branch]
-            result = subprocess.run(pull_cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
+            result = subprocess.run(pull_cmd, cwd=self.repo_path, capture_output=True, text=True, env=env, encoding='utf-8', errors='replace')
             
             if result.returncode != 0:
                 logging.error(f"Git pull failed: {result.stderr}")
                 # Try a simple fetch and reset as fallback
                 logging.info("Trying fallback fetch and reset")
                 fetch_cmd = ["git", "fetch", "origin", self.git_branch]
-                result = subprocess.run(fetch_cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
+                result = subprocess.run(fetch_cmd, cwd=self.repo_path, capture_output=True, text=True, env=env, encoding='utf-8', errors='replace')
                 if result.returncode == 0:
                     reset_cmd = ["git", "reset", "--hard", f"origin/{self.git_branch}"]
-                    result = subprocess.run(reset_cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
+                    result = subprocess.run(reset_cmd, cwd=self.repo_path, capture_output=True, text=True, env=env, encoding='utf-8', errors='replace')
                     if result.returncode == 0:
                         logging.info("Successfully updated using fetch and reset")
                         return True
@@ -200,7 +200,11 @@ class GitMonitor:
             env['HOME'] = tempfile.gettempdir()
             
             cmd = ["git", "log", "--oneline", "--follow", "--", file_path]
-            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
+            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True, 
+                                  env=env, encoding='utf-8', errors='replace')
+            if result.returncode != 0:
+                logging.error(f"Git log command failed for {file_path}: {result.stderr}")
+                return []
             return result.stdout.strip().split('\n') if result.stdout.strip() else []
         except Exception as e:
             logging.error(f"Error getting git log for {file_path}: {e}")
@@ -215,7 +219,7 @@ class GitMonitor:
             env['HOME'] = tempfile.gettempdir()
             
             cmd = ["git", "show", f"{commit_hash}:{file_path}"]
-            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
+            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True, env=env, encoding='utf-8', errors='replace')
             return result.stdout if result.returncode == 0 else None
         except Exception as e:
             logging.error(f"Error getting file content at {commit_hash}: {e}")
@@ -230,7 +234,7 @@ class GitMonitor:
             env['HOME'] = tempfile.gettempdir()
             
             cmd = ["git", "show", "--format=%H|%ai|%s|%an|%ae", "--no-patch", commit_hash]
-            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
+            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True, env=env, encoding='utf-8', errors='replace')
             if result.returncode == 0:
                 parts = result.stdout.strip().split('|')
                 return {
@@ -324,7 +328,9 @@ class GitMonitor:
                         logging.info(f"First occurrence of {usecase} in commit {commit_hash}")
                     
                     # Only add to history if it changed (or it's the first time we see this use case)
-                    if has_changed:
+                    # In test mode, show all commits regardless of changes
+                    test_mode = os.getenv('TEST_MODE', 'false').lower() == 'true'
+                    if has_changed or test_mode:
                         # Check for duplicates before adding
                         duplicate_exists = any(
                             change['commit_hash'] == commit_hash and 
@@ -338,7 +344,7 @@ class GitMonitor:
                             has_eval_results = self.check_s3_file_exists(commit_hash, item['usecase'])
                             eval_results_url = self.generate_s3_eval_url(commit_hash, item['usecase']) if has_eval_results else None
                             # Generate direct view URL for HTML content
-                            eval_direct_url = f"/eval/{commit_hash}/{item['usecase']}" if has_eval_results else None
+                            eval_direct_url = f"/eval/{commit_hash}" if has_eval_results else None
 
                             self.changes_history.append({
                                 'environment': environment,
@@ -444,20 +450,36 @@ class GitMonitor:
         if not self.s3_client:
             return None
 
-        try:
-            s3_key = f"{commit_hash}/{usecase}_results.html"
-            response = self.s3_client.get_object(Bucket=self.s3_bucket_name, Key=s3_key)
-            return response['Body'].read().decode('utf-8')
-        except ClientError as e:
-            if e.response["Error"]["Code"] == "NoSuchKey":
-                logging.warning(f"S3 file not found: {s3_key}")
-                return None
-            else:
-                logging.error(f"Error getting S3 file {s3_key}: {e}")
-                return None
-        except Exception as e:
-            logging.error(f"Unexpected error getting S3 file: {e}")
-            return None
+        # Try different possible file patterns
+        possible_keys = [
+            f"{commit_hash}/{usecase}_results.html",  # KFP evaluation results
+            f"{commit_hash}/{usecase}.html",          # Direct HTML files
+            f"{commit_hash}/benchmark-results.html",  # GuideLL​M benchmark (if usecase is guidellm-benchmark)
+        ]
+        
+        # If usecase contains 'guidellm' or is a benchmark, also try benchmark patterns
+        if 'guidellm' in usecase.lower() or usecase == 'guidellm-benchmark':
+            possible_keys.extend([
+                f"guidellm-benchmarks/{commit_hash}/benchmark-results.html",
+                f"guidellm-benchmarks/{commit_hash}/{usecase}.html",
+            ])
+
+        for s3_key in possible_keys:
+            try:
+                response = self.s3_client.get_object(Bucket=self.s3_bucket_name, Key=s3_key)
+                return response['Body'].read().decode('utf-8')
+            except ClientError as e:
+                if e.response["Error"]["Code"] == "NoSuchKey":
+                    continue  # Try next key pattern
+                else:
+                    logging.error(f"Error getting S3 file {s3_key}: {e}")
+                    continue
+            except Exception as e:
+                logging.error(f"Unexpected error getting S3 file {s3_key}: {e}")
+                continue
+        
+        logging.warning(f"No S3 file found for commit {commit_hash}, usecase {usecase}")
+        return None
     
     def list_s3_files(self, prefix=""):
         """List all files in S3 bucket with optional prefix"""
@@ -484,6 +506,84 @@ class GitMonitor:
             logging.error(f"Unexpected error listing S3 files: {e}")
             return []
     
+    def list_html_files_for_commit(self, commit_hash):
+        """List all HTML files available for a specific commit hash"""
+        if not self.s3_client:
+            return []
+            
+        try:
+            html_files = []
+            
+            # Check both regular structure and GuideLL​M structure
+            prefixes_to_check = [
+                f"{commit_hash}/",                    # Regular KFP evaluation results
+                f"guidellm-benchmarks/{commit_hash}/", # GuideLL​M benchmark results
+            ]
+            
+            for prefix in prefixes_to_check:
+                files = self.list_s3_files(prefix)
+                
+                for file_key in files:
+                    if file_key.endswith('.html'):
+                        # Extract filename from the path
+                        filename = file_key.split('/')[-1]
+                        
+                        # Handle different naming patterns
+                        if filename.endswith('_results.html'):
+                            # KFP evaluation results: summarize_results.html -> summarize
+                            usecase = filename.replace('_results.html', '')
+                            file_type = 'evaluation'
+                        elif filename.startswith('benchmark-results') or 'benchmark-results' in filename:
+                            # GuideLL​M benchmark results: benchmark-results.html or summarize-benchmark-results.html
+                            if 'benchmark-results' in filename and not filename.startswith('benchmark-results'):
+                                # Extract usecase from files like "summarize-benchmark-results.html"
+                                usecase = filename.replace('-benchmark-results.html', '')
+                            else:
+                                usecase = 'guidellm-benchmark'
+                            file_type = 'benchmark'
+                        elif filename.startswith('guidellm') or 'guidellm' in filename.lower():
+                            # Other GuideLL​M files
+                            usecase = filename.replace('.html', '')
+                            file_type = 'benchmark'
+                        else:
+                            # Generic HTML files
+                            usecase = filename.replace('.html', '')
+                            file_type = 'other'
+                        
+                        # Avoid duplicates (in case same file appears in both structures)
+                        if not any(f['usecase'] == usecase and f['filename'] == filename for f in html_files):
+                            html_files.append({
+                                'usecase': usecase,
+                                'filename': filename,
+                                'file_key': file_key,
+                                'file_type': file_type,
+                                'display_name': self._generate_display_name(usecase, file_type)
+                            })
+            
+            # Sort by file type and usecase
+            html_files.sort(key=lambda x: (x['file_type'], x['usecase']))
+            return html_files
+            
+        except Exception as e:
+            logging.error(f"Error listing HTML files for commit {commit_hash}: {e}")
+            return []
+    
+    def _generate_display_name(self, usecase, file_type):
+        """Generate a user-friendly display name for the HTML file"""
+        if file_type == 'evaluation':
+            # KFP evaluation results
+            usecase_display = usecase.replace('_', ' ').title()
+            return f"📊 {usecase_display} Evaluation Results"
+        elif file_type == 'benchmark':
+            # GuideLL​M benchmark results
+            if usecase == 'guidellm-benchmark':
+                return "⚡ GuideLL​M Performance Benchmark"
+            else:
+                return f"⚡ {usecase.replace('_', ' ').title()} Benchmark"
+        else:
+            # Other HTML files
+            return f"📄 {usecase.replace('_', ' ').title()}"
+    
     def refresh_s3_status(self):
         """Refresh S3 evaluation results status for all existing changes"""
         if not self.s3_client:
@@ -502,7 +602,7 @@ class GitMonitor:
             # Check current S3 status
             has_eval_results = self.check_s3_file_exists(commit_hash, usecase)
             eval_results_url = self.generate_s3_eval_url(commit_hash, usecase) if has_eval_results else None
-            eval_direct_url = f"/eval/{commit_hash}/{usecase}" if has_eval_results else None
+            eval_direct_url = f"/eval/{commit_hash}" if has_eval_results else None
 
             # Update if status changed
             if change.get('has_eval_results') != has_eval_results:
@@ -530,7 +630,7 @@ class GitMonitor:
             env['HOME'] = tempfile.gettempdir()
             
             cmd = ["git", "rev-parse", "HEAD"]
-            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True, env=env)
+            result = subprocess.run(cmd, cwd=self.repo_path, capture_output=True, text=True, env=env, encoding='utf-8', errors='replace')
             current_hash = result.stdout.strip()
             
             if self.last_commit_hash != current_hash:
@@ -861,6 +961,40 @@ def force_s3_refresh_legacy(user_id):
     cluster_domain = "apps.cluster-gm86c.gm86c.sandbox1062.opentlc.com"
     return force_s3_refresh(user_id, cluster_domain)
 
+@app.route('/user<int:user_id>/<cluster_domain>/eval/<commit_hash>')
+def select_eval_results(user_id, cluster_domain, commit_hash):
+    """Show selection page for available evaluation results"""
+    user = f"user{user_id}"
+    config = get_user_config(user, cluster_domain)
+    config_key = f"{config['git_repo_url']}-{config['git_branch']}"
+
+    if config_key not in monitors:
+        monitor = GitMonitor(config)
+        monitors[config_key] = monitor
+    else:
+        monitor = monitors[config_key]
+
+    if not monitor.s3_client:
+        return "S3 client not available", 503
+
+    # Get list of available HTML files for this commit
+    html_files = monitor.list_html_files_for_commit(commit_hash)
+
+    if not html_files:
+        return f"No evaluation results found for commit {commit_hash}", 404
+
+    # If only one file available, redirect directly to it
+    if len(html_files) == 1:
+        file_info = html_files[0]
+        return redirect(f"/user{user_id}/{cluster_domain}/eval/{commit_hash}/{file_info['usecase']}")
+
+    # Render selection page with multiple options
+    return render_template('results_selection.html', 
+                         html_files=html_files, 
+                         commit_hash=commit_hash,
+                         user_id=user_id,
+                         cluster_domain=cluster_domain)
+
 @app.route('/user<int:user_id>/<cluster_domain>/eval/<commit_hash>/<usecase>')
 def view_eval_results(user_id, cluster_domain, commit_hash, usecase):
     """Serve evaluation results HTML directly"""
@@ -884,6 +1018,12 @@ def view_eval_results(user_id, cluster_domain, commit_hash, usecase):
         return f"Evaluation results not found for commit {commit_hash} and usecase {usecase}", 404
 
     return Response(html_content, mimetype='text/html')
+
+@app.route('/user<int:user_id>/eval/<commit_hash>')
+def select_eval_results_legacy(user_id, commit_hash):
+    """Legacy endpoint for selecting evaluation results"""
+    cluster_domain = "apps.cluster-gm86c.gm86c.sandbox1062.opentlc.com"
+    return select_eval_results(user_id, cluster_domain, commit_hash)
 
 @app.route('/user<int:user_id>/eval/<commit_hash>/<usecase>')
 def view_eval_results_legacy(user_id, commit_hash, usecase):
