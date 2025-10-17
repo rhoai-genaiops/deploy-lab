@@ -624,6 +624,16 @@ html {
     opacity: 0.9;
 }
 
+.program-download {
+    margin-top: 2rem;
+}
+
+.program-download .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .program-overview {
     padding: 60px 20px;
     background: white;

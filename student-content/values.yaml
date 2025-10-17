@@ -1,4 +1,9 @@
 ---
-cluster_domain: apps.cluster-abc.xabcx.sandbox123.opentlc.com
+cluster_domain: apps.cluster-z84h8.z84h8.sandbox3227.opentlc.com
 modelName: "llama32"
 attendees: 5
+
+# minio:
+#   buckets:
+#     - name: pipeline
+#     - name: test-results
