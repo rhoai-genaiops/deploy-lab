@@ -26,10 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const header = document.querySelector('.header');
     
     window.addEventListener('scroll', function() {
-        if (window.scrollY > 100) {
-            header.style.background = 'rgba(139, 69, 19, 0.98)';
+        if (window.scrollY > 50) {
+            header.classList.add('scrolled');
         } else {
-            header.style.background = 'rgba(139, 69, 19, 0.95)';
+            header.classList.remove('scrolled');
         }
     });
     
