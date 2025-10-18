@@ -16,6 +16,7 @@ import os
 import yaml
 import subprocess
 import json
+import hashlib
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request, Response, redirect
 from threading import Thread
@@ -26,6 +27,10 @@ from urllib.parse import urlparse
 import tempfile
 import boto3
 from botocore.exceptions import ClientError
+import urllib3
+
+# Disable SSL warnings for self-signed certificates
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -271,8 +276,12 @@ class GitMonitor:
             logging.error(f"Error parsing YAML: {e}")
         return []
     
+    def calculate_file_hash(self, content):
+        """Calculate SHA256 hash of file content"""
+        return hashlib.sha256(content.encode('utf-8')).hexdigest()
+    
     def scan_history(self):
-        """Scan git history for changes"""
+        """Scan git history for changes using hash-based comparison"""
         self.changes_history = []
         
         for file_path in self.tracked_files:
@@ -282,8 +291,8 @@ class GitMonitor:
             commits = self.get_git_log(file_path)
             environment = "test" if "test" in file_path else "prod"
             
-            # Track the last known state of each use case
-            usecase_last_state = {}
+            # Track the last known hash for each file
+            last_file_hash = None
             
             # Process commits in reverse order (oldest first) to build proper history
             for commit_line in reversed(commits):
@@ -300,37 +309,32 @@ class GitMonitor:
                 if not content:
                     continue
                 
-                yaml_data = self.parse_yaml_content(content)
+                # Calculate hash of current file content
+                current_file_hash = self.calculate_file_hash(content)
                 
-                # For each use case in this commit, check if it actually changed
-                for item in yaml_data:
-                    usecase = item['usecase']
-                    current_data = {
-                        'model': item['model'],
-                        'prompt': item['prompt'],
-                        'enabled': item['enabled'],
-                        'temperature': item['temperature'],
-                        'top_k': item['top_k'],
-                        'top_p': item['top_p'],
-                        'max_tokens': item['max_tokens']
-                    }
-                    
-                    # Check if this use case actually changed from its last known state
-                    has_changed = True
-                    if usecase in usecase_last_state:
-                        has_changed = current_data != usecase_last_state[usecase]['data']
-                        # Debug logging
-                        if has_changed:
-                            logging.info(f"Change detected for {usecase} in commit {commit_hash}")
-                        else:
-                            logging.info(f"No change for {usecase} in commit {commit_hash}, skipping")
+                # Check if file content actually changed
+                has_changed = True
+                if last_file_hash is not None:
+                    has_changed = current_file_hash != last_file_hash
+                    # Debug logging
+                    if has_changed:
+                        logging.info(f"File change detected in commit {commit_hash} (hash: {current_file_hash[:8]})")
                     else:
-                        logging.info(f"First occurrence of {usecase} in commit {commit_hash}")
+                        logging.info(f"No file change in commit {commit_hash}, skipping")
+                else:
+                    logging.info(f"First occurrence of file in commit {commit_hash} (hash: {current_file_hash[:8]})")
+                
+                # Only process if file content changed (or it's the first time we see this file)
+                # In test mode, show all commits regardless of changes
+                test_mode = os.getenv('TEST_MODE', 'false').lower() == 'true'
+                if has_changed or test_mode:
+                    # Parse YAML to get use case information
+                    yaml_data = self.parse_yaml_content(content)
                     
-                    # Only add to history if it changed (or it's the first time we see this use case)
-                    # In test mode, show all commits regardless of changes
-                    test_mode = os.getenv('TEST_MODE', 'false').lower() == 'true'
-                    if has_changed or test_mode:
+                    # Create entries for all use cases found in this commit
+                    for item in yaml_data:
+                        usecase = item['usecase']
+                        
                         # Check for duplicates before adding
                         duplicate_exists = any(
                             change['commit_hash'] == commit_hash and 
@@ -362,6 +366,7 @@ class GitMonitor:
                                 'commit_author_name': commit_info['author_name'],
                                 'commit_author_email': commit_info['author_email'],
                                 'file_path': file_path,
+                                'file_hash': current_file_hash,
                                 'has_eval_results': has_eval_results,
                                 'eval_results_url': eval_results_url,
                                 'eval_direct_url': eval_direct_url
@@ -369,13 +374,9 @@ class GitMonitor:
                             logging.info(f"Added change entry for {usecase} in commit {commit_hash}")
                         else:
                             logging.warning(f"Duplicate entry detected for {usecase} in commit {commit_hash}, skipping")
-                    
-                    # Update the last known state for this use case
-                    usecase_last_state[usecase] = {
-                        'data': current_data,
-                        'commit_hash': commit_hash,
-                        'commit_date': commit_info['date']
-                    }
+                
+                # Update the last known file hash
+                last_file_hash = current_file_hash
         
         # Sort by commit date (newest first)
         self.changes_history.sort(key=lambda x: x['commit_date'], reverse=True)
