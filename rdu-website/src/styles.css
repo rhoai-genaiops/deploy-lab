@@ -423,14 +423,62 @@ body {
     font-weight: 400;
 }
 
+/* Program Tabs */
+.program-tabs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 3rem 0 4rem 0;
+    padding: 0 1rem;
+}
+
+.tab-button {
+    background: white;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.tab-button:hover {
+    border-color: #d1d5db;
+    color: #374151;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tab-button.active {
+    background: linear-gradient(135deg, #8b4513, #2d5016);
+    border-color: #8b4513;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+}
+
+.tab-button.active:hover {
+    background: linear-gradient(135deg, #a0522d, #2d5016);
+    box-shadow: 0 6px 16px rgba(139, 69, 19, 0.4);
+}
+
 .programs-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 2rem;
-    margin-top: 4rem;
+    margin-top: 2rem;
     max-width: 1280px;
     margin-left: auto;
     margin-right: auto;
+}
+
+.program-card.hidden {
+    display: none !important;
 }
 
 .program-card {
