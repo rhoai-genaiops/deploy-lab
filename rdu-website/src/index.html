@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDU - Redwood Digital University</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <h1>RDU</h1>
+                    <span>Redwood Digital University</span>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="#academics" class="nav-link">Academics</a></li>
+                    <li class="nav-item"><a href="#admissions" class="nav-link">Admissions</a></li>
+                    <li class="nav-item"><a href="#research" class="nav-link">Research</a></li>
+                    <li class="nav-item"><a href="#campus" class="nav-link">Campus Life</a></li>
+                    <li class="nav-item"><a href="#about" class="nav-link">About</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">Where Ideas Take Root</h1>
+                    <p class="hero-subtitle">At Redwood Digital University, curiosity grows into discovery. Join a community where thoughtful inquiry and hands-on learning cultivate the knowledge and skills to make a meaningful impact.</p>
+                    <div class="hero-buttons">
+                        <a href="#academics" class="btn btn-primary">Explore Programs</a>
+                        <a href="#admissions" class="btn btn-secondary">Apply Now</a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="placeholder-image">
+                        <div class="campus-graphic">
+                            <div class="redwood-forest">
+                                <div class="redwood-tree tree-1">🌲</div>
+                                <div class="redwood-tree tree-2">🌲</div>
+                                <div class="redwood-tree tree-3">🌲</div>
+                                <div class="redwood-tree tree-4">🌲</div>
+                                <div class="redwood-tree tree-5">🌲</div>
+                            </div>
+                            <div class="campus-text">Among the Giants</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h3>20</h3>
+                    <p>Undergraduate Programs</p>
+                </div>
+                <div class="stat-item">
+                    <h3>240</h3>
+                    <p>ECTS Credits per Program</p>
+                </div>
+                <div class="stat-item">
+                    <h3>8</h3>
+                    <p>Semesters</p>
+                </div>
+                <div class="stat-item">
+                    <h3>100%</h3>
+                    <p>Graduate Employment Rate</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Academics Section -->
+    <section id="academics" class="academics">
+        <div class="container">
+            <h2 class="section-title">Academic Excellence</h2>
+            <p class="section-subtitle">Twenty distinguished programs that bridge theory and practice, preparing scholars for leadership in their chosen fields</p>
+            
+            <!-- Program Category Tabs -->
+            <div class="program-tabs">
+                <button class="tab-button active" data-category="all">All Programs</button>
+                <button class="tab-button" data-category="stem">STEM & Science</button>
+                <button class="tab-button" data-category="engineering">Engineering</button>
+                <button class="tab-button" data-category="business">Business & Economics</button>
+                <button class="tab-button" data-category="health">Health & Life Sciences</button>
+                <button class="tab-button" data-category="arts">Arts & Humanities</button>
+                <button class="tab-button" data-category="interdisciplinary">Interdisciplinary</button>
+            </div>
+
+            <div class="programs-grid">
+                <!-- STEM & Science Programs -->
+                <div class="program-card" data-category="stem">
+                    <div class="program-icon">🧬</div>
+                    <h3>Biotechnology</h3>
+                    <p>A lab-intensive, industry-aligned curriculum bridging molecular & cell biology, chemistry, bioinformatics, and bioprocess engineering.</p>
+                    <ul class="program-highlights">
+                        <li>Bioprocess Engineering</li>
+                        <li>Genetic Engineering</li>
+                        <li>Bioinformatics & Data</li>
+                        <li>Quality & Regulatory</li>
+                    </ul>
+                    <a href="biotechnology.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="stem">
+                    <div class="program-icon">🧪</div>
+                    <h3>Chemistry</h3>
+                    <p>Comprehensive chemistry curriculum covering organic, inorganic, physical, and analytical chemistry with extensive laboratory experience.</p>
+                    <ul class="program-highlights">
+                        <li>Organic & Inorganic Chemistry</li>
+                        <li>Physical Chemistry</li>
+                        <li>Analytical Methods</li>
+                        <li>Materials Science</li>
+                    </ul>
+                    <a href="chemistry.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="stem">
+                    <div class="program-icon">📐</div>
+                    <h3>Mathematics</h3>
+                    <p>Rigorous mathematical training spanning pure and applied mathematics, statistics, and computational methods with real-world applications.</p>
+                    <ul class="program-highlights">
+                        <li>Pure Mathematics</li>
+                        <li>Applied Mathematics</li>
+                        <li>Statistics & Probability</li>
+                        <li>Computational Methods</li>
+                    </ul>
+                    <a href="mathematics.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="stem">
+                    <div class="program-icon">⚛️</div>
+                    <h3>Physics</h3>
+                    <p>Fundamental physics program covering classical mechanics, quantum mechanics, electromagnetism, and thermodynamics with research opportunities.</p>
+                    <ul class="program-highlights">
+                        <li>Quantum Mechanics</li>
+                        <li>Electromagnetism</li>
+                        <li>Thermodynamics</li>
+                        <li>Research Methods</li>
+                    </ul>
+                    <a href="physics.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="stem">
+                    <div class="program-icon">🌍</div>
+                    <h3>Environmental Science</h3>
+                    <p>Interdisciplinary program addressing environmental challenges through scientific analysis, policy development, and sustainable solutions.</p>
+                    <ul class="program-highlights">
+                        <li>Environmental Chemistry</li>
+                        <li>Ecology & Conservation</li>
+                        <li>Climate Science</li>
+                        <li>Policy & Sustainability</li>
+                    </ul>
+                    <a href="environmental-science.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="stem">
+                    <div class="program-icon">📊</div>
+                    <h3>Data Science</h3>
+                    <p>Modern data science curriculum combining statistics, machine learning, programming, and domain expertise for data-driven insights.</p>
+                    <ul class="program-highlights">
+                        <li>Machine Learning</li>
+                        <li>Statistical Analysis</li>
+                        <li>Data Visualization</li>
+                        <li>Big Data Systems</li>
+                    </ul>
+                    <a href="data-science.html" class="program-link">Learn More →</a>
+                </div>
+
+                <!-- Engineering Programs -->
+                <div class="program-card" data-category="engineering">
+                    <div class="program-icon">💻</div>
+                    <h3>Computer Engineering</h3>
+                    <p>Comprehensive hardware, software, and systems engineering with strong lab and project components covering embedded systems and AI.</p>
+                    <ul class="program-highlights">
+                        <li>Embedded Systems</li>
+                        <li>Digital Design & VLSI</li>
+                        <li>AI/ML Fundamentals</li>
+                        <li>Cybersecurity</li>
+                    </ul>
+                    <a href="computer-engineering.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="engineering">
+                    <div class="program-icon">⚙️</div>
+                    <h3>Mechanical Engineering</h3>
+                    <p>Practice-heavy curriculum spanning mechanics, materials, thermofluids, design & manufacturing, dynamics & control, and sustainability.</p>
+                    <ul class="program-highlights">
+                        <li>Advanced Manufacturing</li>
+                        <li>Sustainable Energy</li>
+                        <li>Robotics & Mechatronics</li>
+                        <li>CAD/CAE Design</li>
+                    </ul>
+                    <a href="mechanical-engineering.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="engineering">
+                    <div class="program-icon">⚡</div>
+                    <h3>Electrical Engineering</h3>
+                    <p>Comprehensive electrical engineering program covering circuits, power systems, electronics, and signal processing with hands-on labs.</p>
+                    <ul class="program-highlights">
+                        <li>Power Systems</li>
+                        <li>Signal Processing</li>
+                        <li>Control Systems</li>
+                        <li>Electronics Design</li>
+                    </ul>
+                    <a href="electrical-engineering.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="engineering">
+                    <div class="program-icon">🏗️</div>
+                    <h3>Civil Engineering</h3>
+                    <p>Infrastructure-focused program covering structural design, transportation systems, environmental engineering, and sustainable construction.</p>
+                    <ul class="program-highlights">
+                        <li>Structural Design</li>
+                        <li>Transportation Systems</li>
+                        <li>Environmental Engineering</li>
+                        <li>Construction Management</li>
+                    </ul>
+                    <a href="civil-engineering.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="engineering">
+                    <div class="program-icon">🏭</div>
+                    <h3>Chemical Engineering</h3>
+                    <p>Process engineering program focusing on chemical processes, materials science, thermodynamics, and industrial applications.</p>
+                    <ul class="program-highlights">
+                        <li>Process Design</li>
+                        <li>Thermodynamics</li>
+                        <li>Materials Science</li>
+                        <li>Process Control</li>
+                    </ul>
+                    <a href="chemical-engineering.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="engineering">
+                    <div class="program-icon">✈️</div>
+                    <h3>Aerospace Engineering</h3>
+                    <p>Specialized program in aeronautical and space systems engineering covering flight mechanics, propulsion, and spacecraft design.</p>
+                    <ul class="program-highlights">
+                        <li>Flight Mechanics</li>
+                        <li>Propulsion Systems</li>
+                        <li>Spacecraft Design</li>
+                        <li>Aerodynamics</li>
+                    </ul>
+                    <a href="aerospace-engineering.html" class="program-link">Learn More →</a>
+                </div>
+
+                <!-- Business & Economics Programs -->
+                <div class="program-card" data-category="business">
+                    <div class="program-icon">💼</div>
+                    <h3>Business Administration</h3>
+                    <p>Comprehensive business program covering management, finance, marketing, and entrepreneurship with practical case studies and internships.</p>
+                    <ul class="program-highlights">
+                        <li>Strategic Management</li>
+                        <li>Finance & Accounting</li>
+                        <li>Marketing & Sales</li>
+                        <li>Entrepreneurship</li>
+                    </ul>
+                    <a href="business-administration.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="business">
+                    <div class="program-icon">📈</div>
+                    <h3>Economics</h3>
+                    <p>Rigorous economics program combining theoretical foundations with empirical analysis, policy evaluation, and quantitative methods.</p>
+                    <ul class="program-highlights">
+                        <li>Microeconomics</li>
+                        <li>Macroeconomics</li>
+                        <li>Econometrics</li>
+                        <li>Policy Analysis</li>
+                    </ul>
+                    <a href="economics.html" class="program-link">Learn More →</a>
+                </div>
+
+                <!-- Health & Life Sciences Programs -->
+                <div class="program-card" data-category="health">
+                    <div class="program-icon">🧠</div>
+                    <h3>Psychology</h3>
+                    <p>Comprehensive psychology program covering cognitive, developmental, social, and clinical psychology with research and applied components.</p>
+                    <ul class="program-highlights">
+                        <li>Cognitive Psychology</li>
+                        <li>Developmental Psychology</li>
+                        <li>Social Psychology</li>
+                        <li>Research Methods</li>
+                    </ul>
+                    <a href="psychology.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="health">
+                    <div class="program-icon">🏥</div>
+                    <h3>Public Health</h3>
+                    <p>Multidisciplinary program focusing on disease prevention, health promotion, and population health through epidemiology and policy.</p>
+                    <ul class="program-highlights">
+                        <li>Epidemiology</li>
+                        <li>Health Policy</li>
+                        <li>Biostatistics</li>
+                        <li>Global Health</li>
+                    </ul>
+                    <a href="public-health.html" class="program-link">Learn More →</a>
+                </div>
+
+                <!-- Arts & Humanities Programs -->
+                <div class="program-card" data-category="arts">
+                    <div class="program-icon">📚</div>
+                    <h3>Liberal Arts</h3>
+                    <p>Interdisciplinary, writing-intensive program spanning humanities, social sciences, arts, and quantitative reasoning with global perspectives.</p>
+                    <ul class="program-highlights">
+                        <li>Critical Inquiry</li>
+                        <li>Global Citizenship</li>
+                        <li>Digital Humanities</li>
+                        <li>Research Excellence</li>
+                    </ul>
+                    <a href="liberal-arts.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="arts">
+                    <div class="program-icon">🎨</div>
+                    <h3>Art & Design</h3>
+                    <p>Creative program combining traditional and digital art techniques with design thinking, visual communication, and contemporary art practices.</p>
+                    <ul class="program-highlights">
+                        <li>Digital Art & Design</li>
+                        <li>Traditional Media</li>
+                        <li>Visual Communication</li>
+                        <li>Art History & Theory</li>
+                    </ul>
+                    <a href="art-design.html" class="program-link">Learn More →</a>
+                </div>
+
+                <div class="program-card" data-category="arts">
+                    <div class="program-icon">📢</div>
+                    <h3>Communications</h3>
+                    <p>Modern communications program covering journalism, public relations, digital media, and strategic communication in the digital age.</p>
+                    <ul class="program-highlights">
+                        <li>Digital Journalism</li>
+                        <li>Public Relations</li>
+                        <li>Media Production</li>
+                        <li>Strategic Communication</li>
+                    </ul>
+                    <a href="communications.html" class="program-link">Learn More →</a>
+                </div>
+
+                <!-- Interdisciplinary Programs -->
+                <div class="program-card" data-category="interdisciplinary">
+                    <div class="program-icon">🌐</div>
+                    <h3>International Studies</h3>
+                    <p>Global perspective program integrating political science, economics, history, and cultural studies with language proficiency and study abroad.</p>
+                    <ul class="program-highlights">
+                        <li>Global Politics</li>
+                        <li>International Economics</li>
+                        <li>Cultural Studies</li>
+                        <li>Language Proficiency</li>
+                    </ul>
+                    <a href="international-studies.html" class="program-link">Learn More →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Research Section -->
+    <section id="research" class="research">
+        <div class="container">
+            <div class="research-content">
+                <div class="research-text">
+                    <h2>Pioneering Research</h2>
+                    <p>Our faculty and students collaborate on transformative research that advances knowledge and addresses the world's most complex challenges. Join a community of scholars dedicated to discovery and innovation.</p>
+                    <ul class="research-areas">
+                        <li>🔬 Biomedical Engineering & Biotechnology</li>
+                        <li>🤖 Artificial Intelligence & Machine Learning</li>
+                        <li>🌱 Sustainable Energy Systems</li>
+                        <li>🌍 Environmental Technology</li>
+                        <li>💡 Advanced Materials Science</li>
+                    </ul>
+                    <a href="#" class="btn btn-primary">Explore Research</a>
+                </div>
+                <div class="research-image">
+                    <div class="research-visual">
+                        <div class="research-icon-grid">
+                            <div class="research-icon">🧬</div>
+                            <div class="research-icon">🔬</div>
+                            <div class="research-icon">🤖</div>
+                            <div class="research-icon">⚗️</div>
+                        </div>
+                        <div class="research-text">Innovation Hub</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admissions Section -->
+    <section id="admissions" class="admissions">
+        <div class="container">
+            <h2 class="section-title">Join Our Community</h2>
+            <div class="admissions-grid">
+                <div class="admission-card">
+                    <h3>Undergraduate Admissions</h3>
+                    <p>Join our distinguished community of scholars and innovators. We seek exceptional students who demonstrate intellectual curiosity, leadership potential, and a commitment to making meaningful contributions to society.</p>
+                    <div class="admission-requirements">
+                        <h4>Requirements:</h4>
+                        <ul>
+                            <li>High school diploma or equivalent</li>
+                            <li>SAT/ACT scores or equivalent</li>
+                            <li>Letters of recommendation</li>
+                            <li>Personal statement</li>
+                        </ul>
+                    </div>
+                    <a href="#" class="btn btn-secondary">Apply Now</a>
+                </div>
+                <div class="admission-info">
+                    <h3>Important Dates</h3>
+                    <div class="dates-list">
+                        <div class="date-item">
+                            <strong>Early Decision:</strong> November 1
+                        </div>
+                        <div class="date-item">
+                            <strong>Regular Decision:</strong> January 1
+                        </div>
+                        <div class="date-item">
+                            <strong>Transfer Applications:</strong> March 15
+                        </div>
+                    </div>
+                    <h3>Financial Aid</h3>
+                    <p>We're committed to making education accessible. 95% of our students receive some form of financial assistance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Campus Life Section -->
+    <section id="campus" class="campus">
+        <div class="container">
+            <h2 class="section-title">Campus Life</h2>
+            <div class="campus-features">
+                <div class="feature">
+                    <div class="feature-icon">🏠</div>
+                    <h3>Residential Life</h3>
+                    <p>Experience community living in our modern residence halls with state-of-the-art facilities.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Student Organizations</h3>
+                    <p>Join over 100 student clubs and organizations to pursue your passions and develop leadership skills.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🏃</div>
+                    <h3>Athletics & Recreation</h3>
+                    <p>Stay active with our comprehensive athletics program and world-class recreation facilities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>RDU - Redwood Digital University</h3>
+                    <p>Excellence in Innovation</p>
+                    <p>📍 Redwood Valley, CA</p>
+                    <p>📞 (555) 123-4567</p>
+                    <p>✉️ info@rdu.edu</p>
+                </div>
+                <div class="footer-section">
+                    <h4>STEM & Science</h4>
+                    <ul>
+                        <li><a href="biotechnology.html">Biotechnology</a></li>
+                        <li><a href="chemistry.html">Chemistry</a></li>
+                        <li><a href="mathematics.html">Mathematics</a></li>
+                        <li><a href="physics.html">Physics</a></li>
+                        <li><a href="environmental-science.html">Environmental Science</a></li>
+                        <li><a href="data-science.html">Data Science</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Engineering</h4>
+                    <ul>
+                        <li><a href="computer-engineering.html">Computer Engineering</a></li>
+                        <li><a href="mechanical-engineering.html">Mechanical Engineering</a></li>
+                        <li><a href="electrical-engineering.html">Electrical Engineering</a></li>
+                        <li><a href="civil-engineering.html">Civil Engineering</a></li>
+                        <li><a href="chemical-engineering.html">Chemical Engineering</a></li>
+                        <li><a href="aerospace-engineering.html">Aerospace Engineering</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Business & Others</h4>
+                    <ul>
+                        <li><a href="business-administration.html">Business Administration</a></li>
+                        <li><a href="economics.html">Economics</a></li>
+                        <li><a href="psychology.html">Psychology</a></li>
+                        <li><a href="public-health.html">Public Health</a></li>
+                        <li><a href="liberal-arts.html">Liberal Arts</a></li>
+                        <li><a href="art-design.html">Art & Design</a></li>
+                        <li><a href="communications.html">Communications</a></li>
+                        <li><a href="international-studies.html">International Studies</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#admissions">Admissions</a></li>
+                        <li><a href="#campus">Student Life</a></li>
+                        <li><a href="#research">Research</a></li>
+                        <li><a href="#">Alumni</a></li>
+                    </ul>
+                    <div style="margin-top: 1.5rem;">
+                        <h5 style="color: #8b4513; margin-bottom: 0.5rem;">Connect</h5>
+                        <div style="display: flex; gap: 1rem;">
+                            <a href="#" style="color: #6b7280;">Facebook</a>
+                            <a href="#" style="color: #6b7280;">Twitter</a>
+                            <a href="#" style="color: #6b7280;">LinkedIn</a>
+                            <a href="#" style="color: #6b7280;">Instagram</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Redwood Digital University. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
