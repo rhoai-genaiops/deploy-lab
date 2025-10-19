@@ -1,6 +1,6 @@
-# RDU - Redwood University Website
+# RDU - Redwood Digital University Website
 
-A modern, responsive website for Redwood University featuring their four undergraduate programs: Biotechnology, Computer Engineering, Liberal Arts, and Mechanical Engineering.
+A modern, responsive website for Redwood Digital University featuring their four undergraduate programs: Biotechnology, Computer Engineering, Liberal Arts, and Mechanical Engineering.
 
 ## Project Structure
 
@@ -250,11 +250,11 @@ For technical support, contact:
 
 ## License
 
-Copyright © 2024 Redwood University. All rights reserved.
+Copyright © 2024 Redwood Digital University. All rights reserved.
 
-This project is proprietary software owned by Redwood University. Unauthorized use, reproduction, or distribution is prohibited.
+This project is proprietary software owned by Redwood Digital University. Unauthorized use, reproduction, or distribution is prohibited.
 
 ---
 
-**Redwood University** - Excellence in Innovation
+**Redwood Digital University** - Excellence in Innovation
 📍 Redwood Valley, CA | 📞 (555) 123-4567 | ✉️ info@rdu.edu
