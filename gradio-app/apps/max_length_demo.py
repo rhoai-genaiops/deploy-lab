@@ -8,7 +8,7 @@ BASE_URL = os.getenv('TINY_URL', 'https://tinyllama-1b-cpu')
 # Get model name from environment variable
 MODEL_NAME = os.getenv('TINY_MODEL_NAME', 'tinyllama')
 
-def chat_with_model_stream(message, max_tokens=2048):
+def chat_with_model_stream(message, max_tokens=2000):
     if not message:
         yield "Please provide a message."
         return
@@ -102,7 +102,7 @@ def create_max_length_demo():
                 last_message = history[-1]["content"]
                 history.append({"role": "assistant", "content": ""})
                 
-                for chunk in chat_with_model_stream(last_message, max_tokens=2048):
+                for chunk in chat_with_model_stream(last_message, max_tokens=2000):
                     history[-1]["content"] = chunk
                     yield history
 

@@ -1,0 +1,130 @@
+---
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    openshift.io/display-name: prompt-injection-detector
+    serving.knative.openshift.io/enablePassthrough: 'true'
+    serving.kserve.io/deploymentMode: RawDeployment
+    sidecar.istio.io/inject: 'true'
+    sidecar.istio.io/rewriteAppHTTPProbers: 'true'
+  name: prompt-injection-detector
+  finalizers:
+    - odh.inferenceservice.finalizers
+    - inferenceservice.finalizers
+  labels:
+    opendatahub.io/dashboard: 'true'
+spec:
+  predictor:
+    automountServiceAccountToken: false
+    maxReplicas: 1
+    minReplicas: 1
+    model:
+      modelFormat:
+        name: guardrails-detector-huggingface
+      name: ''
+      resources:
+        limits:
+          cpu: '2'
+          memory: 8Gi
+          nvidia.com/gpu: '1'
+        requests:
+          cpu: '1'
+          memory: 4Gi
+          nvidia.com/gpu: '1'
+      runtime: guardrails-detector-runtime-prompt-injection
+      storage:
+        key: aws-connection-llm-data-connection
+        path: Llama-Prompt-Guard-2-86M
+    tolerations:
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Exists
+---
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"serving.kserve.io/v1beta1","kind":"InferenceService","metadata":{"annotations":{"openshift.io/display-name":"guardrails-detector-ibm-hap","serving.knative.openshift.io/enablePassthrough":"true","serving.kserve.io/deploymentMode":"RawDeployment","sidecar.istio.io/inject":"true","sidecar.istio.io/rewriteAppHTTPProbers":"true"},"labels":{"opendatahub.io/dashboard":"true"},"name":"guardrails-detector-ibm-hap","namespace":"lemonade-lover"},"spec":{"predictor":{"maxReplicas":1,"minReplicas":1,"model":{"modelFormat":{"name":"guardrails-detector-huggingface"},"name":"","resources":{"limits":{"cpu":"2","memory":"8Gi","nvidia.com/gpu":"1"},"requests":{"cpu":"1","memory":"4Gi","nvidia.com/gpu":"1"}},"runtime":"guardrails-detector-runtime-hap","storage":{"key":"aws-connection-minio-data-connection-guardrails-hap","path":"granite-guardian-hap-38m"}},"tolerations":[{"effect":"NoSchedule","key":"nvidia.com/gpu","operator":"Equal","value":"Tesla-T4-SHARED"}]}}}
+    openshift.io/display-name: guardrails-detector-ibm-hap
+    serving.knative.openshift.io/enablePassthrough: 'true'
+    serving.kserve.io/deploymentMode: RawDeployment
+    sidecar.istio.io/inject: 'true'
+    sidecar.istio.io/rewriteAppHTTPProbers: 'true'
+  name: guardrails-detector-ibm-hap
+  finalizers:
+    - odh.inferenceservice.finalizers
+    - inferenceservice.finalizers
+  labels:
+    opendatahub.io/dashboard: 'true'
+spec:
+  predictor:
+    automountServiceAccountToken: false
+    maxReplicas: 1
+    minReplicas: 1
+    model:
+      modelFormat:
+        name: guardrails-detector-huggingface
+      name: ''
+      resources:
+        limits:
+          cpu: '2'
+          memory: 8Gi
+          nvidia.com/gpu: '1'
+        requests:
+          cpu: '1'
+          memory: 4Gi
+          nvidia.com/gpu: '1'
+      runtime: guardrails-detector-runtime-hap
+      storage:
+        key: aws-connection-minio-data-connection-detector-models
+        path: granite-guardian-hap-125m
+    tolerations:
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Equal
+        value: Tesla-T4-SHARED
+---
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    openshift.io/display-name: language-detector
+    serving.knative.openshift.io/enablePassthrough: 'true'
+    serving.kserve.io/deploymentMode: RawDeployment
+    sidecar.istio.io/inject: 'true'
+    sidecar.istio.io/rewriteAppHTTPProbers: 'true'
+  name: language-detector
+  finalizers:
+    - odh.inferenceservice.finalizers
+    - inferenceservice.finalizers
+  labels:
+    opendatahub.io/dashboard: 'true'
+spec:
+  predictor:
+    automountServiceAccountToken: false
+    maxReplicas: 1
+    minReplicas: 1
+    model:
+      modelFormat:
+        name: guardrails-detector-huggingface
+      name: ''
+      resources:
+        limits:
+          cpu: '1'
+          memory: 12Gi
+          nvidia.com/gpu: '1'
+        requests:
+          cpu: '1'
+          memory: 6Gi
+          nvidia.com/gpu: '1'
+      runtime: guardrails-detector-runtime-language-detector
+      storage:
+        key: aws-connection-minio-data-connection-detector-models
+        path: xlm-roberta-base-language-detection
+    tolerations:
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Equal
+        value: Tesla-T4-SHARED
