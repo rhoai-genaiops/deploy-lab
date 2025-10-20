@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.name }}
+  name: rdu-website
   labels:
-    app: {{ .Values.name }}
+    app: rdu-website
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.name }}
+      app: rdu-website
   template:
     metadata:
       labels:
-        app: {{ .Values.name }}
+        app: rdu-website
     spec:
       containers:
-      - name: {{ .Values.name }}
+      - name: rdu-website
         image: quay.io/rhoai-genaiops/rdu-website:0.0.1
         imagePullPolicy: Always
         ports:

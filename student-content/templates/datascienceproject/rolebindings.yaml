@@ -76,4 +76,38 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: llama-stack-user{{ $attendee }}-role
+---
+# for Guardrails Orchestrator
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: guardrailsorchestrators-user{{ $attendee }}-role
+  namespace: user{{ $attendee }}-canopy
+rules:
+- apiGroups:
+  - "trustyai.opendatahub.io"
+  resources:
+  - guardrailsorchestrators
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: guardrailsorchestrators-user{{ $attendee }}-rolebinding
+  namespace: user{{ $attendee }}-canopy
+subjects:
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: user{{ $attendee }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: guardrailsorchestrators-user{{ $attendee }}-role
 {{- end }}

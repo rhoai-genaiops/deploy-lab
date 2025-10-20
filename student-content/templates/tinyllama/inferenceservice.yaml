@@ -24,10 +24,10 @@ spec:
       name: ''
       resources:
         limits:
-          cpu: '4'
-          memory: 8Gi
+          cpu: '8'
+          memory: 16Gi
         requests:
-          cpu: '2'
-          memory: 4Gi
+          cpu: '6'
+          memory: 12Gi
       runtime: vllm-cpu
       storageUri: 'oci://quay.io/rh-aiservices-bu/tinyllama:1.0'

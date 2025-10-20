@@ -1,9 +1,8 @@
 ---
----
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: tinyllama-1b-cpu
+  name: tinyllama
   namespace: ai501
 spec:
   to:

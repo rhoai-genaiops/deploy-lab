@@ -1,13 +1,13 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: {{ .Values.name }}
+  name: rdu-website
   labels:
-    app: {{ .Values.name }}
+    app: rdu-website
 spec:
   to:
     kind: Service
-    name: {{ .Values.name }}
+    name: rdu-website
   port:
     targetPort: 8080
   tls:
