@@ -1,0 +1,215 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guardrails-multi-model
+  labels:
+    app: guardrails-multi-model
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: guardrails-multi-model
+  template:
+    metadata:
+      labels:
+        app: guardrails-multi-model
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: '8080'
+    spec:
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      initContainers:
+      # Init container to download Llama-Prompt-Guard-2-86M
+      - name: download-prompt-guard
+        image: quay.io/rgeada/llm_downloader:latest
+        command:
+          - /bin/bash
+          - -c
+          - |
+             /tmp/venv/bin/huggingface-cli download meta-llama/Llama-Prompt-Guard-2-86M --local-dir /mnt/models/prompt-injection
+        env:
+          - name: HF_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: huggingface-secret
+                key: token
+                optional: true
+        volumeMounts:
+          - name: prompt-injection-model
+            mountPath: /mnt/models/prompt-injection
+
+      # Init container to download granite-guardian-hap-125m
+      - name: download-granite-hap
+        image: quay.io/rgeada/llm_downloader:latest
+        command:
+          - /bin/bash
+          - -c
+          - |
+             /tmp/venv/bin/huggingface-cli download ibm-granite/granite-guardian-hap-125m --local-dir /mnt/models/granite-hap
+        env:
+          - name: HF_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: huggingface-secret
+                key: token
+                optional: true
+        volumeMounts:
+          - name: granite-hap-model
+            mountPath: /mnt/models/granite-hap
+
+      # Init container to download xlm-roberta-base-language-detection
+      - name: download-language-detector
+        image: quay.io/rgeada/llm_downloader:latest
+        command:
+          - /bin/bash
+          - -c
+          - |
+             /tmp/venv/bin/huggingface-cli download papluca/xlm-roberta-base-language-detection --local-dir /mnt/models/language-detector
+        env:
+          - name: HF_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: huggingface-secret
+                key: token
+                optional: true
+        volumeMounts:
+          - name: language-detector-model
+            mountPath: /mnt/models/language-detector
+
+      containers:
+      # Prompt Injection Detector (Llama-Prompt-Guard-2-86M)
+      - name: prompt-injection-detector
+        image: quay.io/rh-ee-mmisiura/hf-detector:latest
+        command:
+          - uvicorn
+          - 'app:app'
+        args:
+          - '--workers'
+          - '4'
+          - '--host'
+          - '0.0.0.0'
+          - '--port'
+          - '8000'
+          - '--log-config'
+          - '/common/log_conf.yaml'
+        env:
+          - name: MODEL_DIR
+            value: /mnt/models/prompt-injection
+          - name: HF_HOME
+            value: /tmp/hf_home
+        ports:
+          - containerPort: 8000
+            protocol: TCP
+            name: http
+        resources:
+          limits:
+            cpu: '2'
+            memory: 8Gi
+            nvidia.com/gpu: '1'
+          requests:
+            cpu: '1'
+            memory: 4Gi
+            nvidia.com/gpu: '1'
+        volumeMounts:
+          - name: prompt-injection-model
+            mountPath: /mnt/models/prompt-injection
+          - name: shm
+            mountPath: /dev/shm
+
+      # Granite Guardian HAP (granite-guardian-hap-125m)
+      - name: granite-guardian-hap
+        image: quay.io/rgeada/guardrails-detector-huggingface
+        command:
+          - uvicorn
+          - 'app:app'
+        args:
+          - '--workers'
+          - '4'
+          - '--host'
+          - '0.0.0.0'
+          - '--port'
+          - '8001'
+          - '--log-config'
+          - '/common/log_conf.yaml'
+        env:
+          - name: MODEL_DIR
+            value: /mnt/models/granite-hap
+          - name: HF_HOME
+            value: /tmp/hf_home
+        ports:
+          - containerPort: 8001
+            protocol: TCP
+            name: http
+        resources:
+          limits:
+            cpu: '2'
+            memory: 8Gi
+          requests:
+            cpu: '1'
+            memory: 4Gi
+        volumeMounts:
+          - name: granite-hap-model
+            mountPath: /mnt/models/granite-hap
+          - name: shm
+            mountPath: /dev/shm
+
+      # Language Detector (xlm-roberta-base-language-detection)
+      - name: language-detector
+        image: quay.io/rh-ee-mmisiura/hf-detector:latest
+        command:
+          - uvicorn
+          - 'app:app'
+        args:
+          - '--workers'
+          - '4'
+          - '--host'
+          - '0.0.0.0'
+          - '--port'
+          - '8002'
+          - '--log-config'
+          - '/common/log_conf.yaml'
+        env:
+          - name: MODEL_DIR
+            value: /mnt/models/language-detector
+          - name: HF_HOME
+            value: /tmp/hf_home
+          - name: SAFE_LABELS
+            value: '["en"]'
+        ports:
+          - containerPort: 8002
+            protocol: TCP
+            name: http
+        resources:
+          limits:
+            cpu: '1'
+            memory: 12Gi
+          requests:
+            cpu: '1'
+            memory: 6Gi
+        volumeMounts:
+          - name: language-detector-model
+            mountPath: /mnt/models/language-detector
+          - name: shm
+            mountPath: /dev/shm
+
+      volumes:
+      # Volume for Prompt Injection model
+      - name: prompt-injection-model
+        persistentVolumeClaim:
+          claimName: prompt-injection-model-pvc
+      # Volume for Granite HAP model
+      - name: granite-hap-model
+        persistentVolumeClaim:
+          claimName: granite-hap-model-pvc
+      # Volume for Language Detector model
+      - name: language-detector-model
+        persistentVolumeClaim:
+          claimName: language-detector-model-pvc
+      # Shared memory for GPU operations
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 2Gi
