@@ -8,7 +8,6 @@ metadata:
   labels:
     kubernetes.io/metadata.name: user{{ $attendee}}-canopy
     opendatahub.io/dashboard: 'true'
-    maistra.io/member-of: istio-system
     modelmesh-enabled: 'false'
   annotations:
     openshift.io/description: 'user{{ $attendee}} Canopy Experiment Environment'

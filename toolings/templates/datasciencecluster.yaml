@@ -14,15 +14,16 @@ spec:
     codeflare:
       managementState: Managed
     kserve:
+      defaultDeploymentMode: RawDeployment
       managementState: Managed
-      defaultDeploymentMode: Serverless
+      nim:
+        managementState: Managed
       rawDeploymentServiceConfig: Headless
       serving:
         ingressGateway:
           certificate:
-            secretName: knative-serving-cert
             type: OpenshiftDefaultIngress
-        managementState: Managed
+        managementState: Removed
         name: knative-serving
     modelregistry:
       managementState: Managed
