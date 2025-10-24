@@ -1446,3 +1446,146 @@ html {
         align-items: center;
     }
 }
+
+/* Fun Clubs Section */
+.fun-clubs-section {
+    margin-top: 4rem;
+    padding: 3rem 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%);
+    border-radius: 20px;
+    border: 1px solid rgba(139, 69, 19, 0.1);
+}
+
+.clubs-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #8b4513;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+}
+
+.clubs-subtitle {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #6b7280;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.clubs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.club-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(139, 69, 19, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.club-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #8b4513, #a0522d);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.club-card:hover::before {
+    transform: scaleX(1);
+}
+
+.club-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(139, 69, 19, 0.15);
+}
+
+.club-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.club-card h4 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.club-card p {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.club-tags {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.tag {
+    background: rgba(139, 69, 19, 0.1);
+    color: #8b4513;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid rgba(139, 69, 19, 0.2);
+}
+
+.clubs-cta {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(139, 69, 19, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(139, 69, 19, 0.1);
+}
+
+.clubs-cta p {
+    font-size: 1.1rem;
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Responsive adjustments for clubs */
+@media (max-width: 768px) {
+    .clubs-title {
+        font-size: 2rem;
+    }
+    
+    .clubs-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .club-card {
+        padding: 1.5rem;
+    }
+    
+    .fun-clubs-section {
+        margin-top: 2rem;
+        padding: 2rem 1rem;
+    }
+}
