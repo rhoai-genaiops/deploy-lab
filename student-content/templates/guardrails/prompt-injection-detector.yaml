@@ -1,11 +1,13 @@
 ---
-# Source: lemonade-stand-assistant/templates/ibm-hap-detector.yaml
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
-  name: guardrails-detector-runtime-hap
   annotations:
     helm.sh/weight: "0"
+    opendatahub.io/recommended-accelerators: '["nvidia.com/gpu"]'
+    openshift.io/display-name: Guardrails Detector ServingRuntime for KServe
+  name: guardrails-detector-runtime-prompt-injection
+  namespace: ai501
   labels:
     opendatahub.io/dashboard: 'true'
 spec:
@@ -40,18 +42,18 @@ spec:
     - autoSelect: true
       name: guardrails-detector-huggingface
 ---
-# Source: lemonade-stand-assistant/templates/ibm-hap-detector.yaml
 apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
   annotations:
     helm.sh/weight: "1"
-    openshift.io/display-name: guardrails-detector-ibm-hap
+    openshift.io/display-name: prompt-injection-detector
     serving.knative.openshift.io/enablePassthrough: 'true'
     serving.kserve.io/deploymentMode: RawDeployment
     sidecar.istio.io/inject: 'true'
     sidecar.istio.io/rewriteAppHTTPProbers: 'true'
-  name: guardrails-detector-ibm-hap
+  name: prompt-injection-detector
+  namespace: ai501
   labels:
     opendatahub.io/dashboard: 'true'
 spec:
@@ -65,19 +67,12 @@ spec:
       name: ''
       resources:
         limits:
-          cpu: 2
-          memory: 8Gi
-          nvidia.com/gpu: '1'
+          cpu: 8
+          memory: 24Gi
         requests:
-          cpu: 1
-          memory: 4Gi
-          nvidia.com/gpu: '1'
-      runtime: guardrails-detector-runtime-hap
+          cpu: 4
+          memory: 16Gi
+      runtime: guardrails-detector-runtime-prompt-injection
       storage:
         key: minio-data-connection-detector-models
-        path: granite-guardian-hap-125m
-    tolerations:
-      - effect: NoSchedule
-        key: nvidia.com/gpu
-        operator: Equal
-        value: Tesla-T4-PRIVATE
+        path: deberta-v3-base-prompt-injection-v2

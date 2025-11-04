@@ -1,7 +1,9 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: rdu-website
+  namespace: ai501
   labels:
     app: rdu-website
 spec:

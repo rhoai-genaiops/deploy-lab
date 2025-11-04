@@ -1,7 +1,9 @@
+---
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: rdu-website
+  namespace: ai501
   labels:
     app: rdu-website
 spec:

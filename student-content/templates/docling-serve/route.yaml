@@ -3,6 +3,7 @@ kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
   name: docling-v0-7-0-predictor
+  namespace: ai501
 spec:
   path: /
   to:

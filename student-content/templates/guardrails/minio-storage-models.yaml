@@ -1,9 +1,9 @@
 ---
-# Source: lemonade-stand-assistant/templates/minio-storage-models.yaml
 apiVersion: v1
 kind: Secret
 metadata:
   name: minio-data-connection-detector-models
+  namespace: ai501
   labels:
     opendatahub.io/dashboard: 'true'
     opendatahub.io/managed: 'true'
@@ -19,11 +19,11 @@ data:
   AWS_SECRET_ACCESS_KEY: VEhFU0VDUkVUS0VZ 
 type: Opaque
 ---
-# Source: lemonade-stand-assistant/templates/minio-storage-models.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: minio-storage-guardrail-detectors-claim
+  namespace: ai501
   annotations:
     helm.sh/weight: "-5"
 spec:
@@ -34,11 +34,11 @@ spec:
     requests:
       storage: 50Gi
 ---
-# Source: lemonade-stand-assistant/templates/minio-storage-models.yaml
 apiVersion: v1
 kind: Service
 metadata:
   name: minio-storage-guardrail-detectors
+  namespace: ai501
   annotations:
     helm.sh/weight: "-5"
 spec:
@@ -50,11 +50,11 @@ spec:
   selector:
     app: minio-storage-guardrail-detectors
 ---
-# Source: lemonade-stand-assistant/templates/minio-storage-models.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: minio-storage-guardrail-detectors
+  namespace: ai501
   annotations:
     helm.sh/weight: "-4"
   labels:
