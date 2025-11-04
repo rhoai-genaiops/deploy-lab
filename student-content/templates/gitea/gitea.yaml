@@ -22,18 +22,18 @@ spec:
   giteaUserPasswordSecretName: gitea-user-password
   giteaMigrateRepositories: true
   giteaRepositoriesList:
-  - repo: https://github.com/rhoai-genaiops/canopy.git
-    name: canopy
+  - repo: https://github.com/rhoai-genaiops/experiments.git
+    name: experiments
     private: true
   - repo: https://github.com/rhoai-genaiops/genaiops-gitops.git
     name: genaiops-gitops
     private: true
-  - repo: https://github.com/rhoai-genaiops/canopy-ui.git 
-    name: canopy-ui
+  - repo: https://github.com/rhoai-genaiops/frontend.git 
+    name: frontend
     private: true
-  - repo: https://github.com/rhoai-genaiops/canopy-be.git 
-    name: canopy-be
+  - repo: https://github.com/rhoai-genaiops/backend.git 
+    name: backend
     private: true
-  - repo: https://github.com/rhoai-genaiops/canopy-evals.git 
-    name: canopy-evals
+  - repo: https://github.com/rhoai-genaiops/evals.git 
+    name: evals
     private: true
