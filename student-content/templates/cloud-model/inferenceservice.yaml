@@ -93,6 +93,7 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: llama32
+  namespace: ai501
   labels:
     app: llama-32
 spec:

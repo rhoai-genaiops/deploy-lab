@@ -91,7 +91,7 @@ A web-based monitoring system that tracks changes to model and prompt configurat
 
 When using user-specific URLs, the system automatically configures:
 
-- **Git Repository**: `https://gitea-gitea.{cluster_domain}/{user}/canopy-be.git`
+- **Git Repository**: `https://gitea-gitea.{cluster_domain}/{user}/backend.git`
 - **Git Credentials**: Username = `{user}`, Password = `thisisthepassword`
 - **S3 Endpoint**: `https://minio-api-{user}-toolings.{cluster_domain}`
 - **S3 Credentials**: Access Key = `{user}`, Secret Key = `thisisthepassword`
@@ -141,7 +141,7 @@ POST /user<N>/api/s3-refresh      - Force S3 refresh (default cluster)
 
 ### Standard Mode - External Private Repository
 ```bash
-export GIT_REPO_URL="https://gitea-gitea.apps.cluster.example.com/user1/canopy-be.git"
+export GIT_REPO_URL="https://gitea-gitea.apps.cluster.example.com/user1/backend.git"
 export GIT_USERNAME="user1"
 export GIT_PASSWORD="thisisthepassword"
 export GIT_BRANCH="main"

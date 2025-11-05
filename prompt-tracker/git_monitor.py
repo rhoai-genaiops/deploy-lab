@@ -675,7 +675,7 @@ monitors = {}
 
 # User-based configuration templates
 USER_CONFIG_TEMPLATE = {
-    'git_repo_url': 'https://gitea-gitea.{cluster_domain}/{user}/canopy-be.git',
+    'git_repo_url': 'https://gitea-gitea.{cluster_domain}/{user}/backend.git',
     'git_username': '{user}',
     'git_password': 'thisisthepassword',
     'git_branch': 'main',

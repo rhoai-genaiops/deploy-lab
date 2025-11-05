@@ -3,6 +3,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: docling-v0-7-0-predictor
+  namespace: ai501
   labels:
     app: docling-v0-7-0-predictor
     component: predictor

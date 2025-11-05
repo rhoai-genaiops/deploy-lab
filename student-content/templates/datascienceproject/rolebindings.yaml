@@ -110,4 +110,19 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: guardrailsorchestrators-user{{ $attendee }}-role
+# Make AI501 readonly for all users
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ai501-user{{ $attendee }}-olebinding
+  namespace: ai501
+subjects:
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: user{{ $attendee }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
 {{- end }}

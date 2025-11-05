@@ -4,6 +4,7 @@ apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
   name: guardrails-detector-runtime-language-detector
+  namespace: ai501
   annotations:
     helm.sh/weight: "0"
   labels:

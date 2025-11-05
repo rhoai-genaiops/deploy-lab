@@ -18,7 +18,7 @@ oc patch --type=merge OAuth/cluster -p '{"spec": {"identityProviders": [{"name":
 
 oc -n openshift-user-workload-monitoring patch configmap user-workload-monitoring-config --type=merge -p '{"data": {"config.yaml": "prometheus:\n  logLevel: debug\n  retention: 15d\nalertmanager:\n  enabled: true\n  enableAlertmanagerConfig: true\n"}}'
 
-oc patch config.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
+# oc patch config.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
 
 # Make ArgoCD cluster wide
 # attendees=`grep attendees student-content/values.yaml | cut -d':' -f2`

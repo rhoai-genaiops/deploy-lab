@@ -5,7 +5,7 @@ metadata:
   name: canopy
 spec:
   connectionConfig:
-    url: 'https://rhoai-genaiops.github.io/canopy-ui/'
+    url: 'https://rhoai-genaiops.github.io/frontend/'
   name: Canopy Helm Charts
 ---
 apiVersion: helm.openshift.io/v1beta1
@@ -20,8 +20,8 @@ spec:
 apiVersion: helm.openshift.io/v1beta1
 kind: HelmChartRepository
 metadata:
-  name: canopy-be
+  name: backend
 spec:
   connectionConfig:
-    url: 'https://rhoai-genaiops.github.io/canopy-be/'
+    url: 'https://rhoai-genaiops.github.io/backend/'
   name: Canopy Helm Charts
