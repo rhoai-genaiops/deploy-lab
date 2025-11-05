@@ -50,7 +50,8 @@ universal_json_settings='// vscode settings are written in json-with-comments
   "security.workspace.trust.startupPrompt": "never",
 
   "files.exclude": {
-    "**/.*": true
+    "**/.*": true,
+    "**/lost+found": true
   }
 }'
 
@@ -74,7 +75,8 @@ json_launch_settings='{
 json_settings='{
   "python.defaultInterpreterPath": "/opt/app-root/bin/python3",
   "files.exclude": {
-    "**/.*": true
+    "**/.*": true,
+    "**/lost+found": true
   }
 }'
 
