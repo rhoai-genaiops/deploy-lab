@@ -1,0 +1,7 @@
+FROM registry.redhat.io/rhoai/odh-workbench-codeserver-datascience-cpu-py312-rhel9@sha256:2fbf4b2214fc6136fce252d81d3d51c6316830aacf95f8398f89e08bde50f766
+
+RUN pip install kfp==2.14.6 kfp-kubernetes==2.14.6 spikee==0.4.6
+
+COPY settings.json /opt/app-root/src/.vscode/settings.json
+
+RUN cat /opt/app-root/src/.vscode/settings.json

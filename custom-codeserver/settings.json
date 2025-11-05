@@ -1,0 +1,6 @@
+{
+  "python.defaultInterpreterPath": "/opt/app-root/bin/python3",
+  "files.exclude": {
+    "**/.*": true,
+  }
+}
