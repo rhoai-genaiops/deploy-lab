@@ -2,6 +2,12 @@ FROM registry.redhat.io/rhoai/odh-workbench-codeserver-datascience-cpu-py312-rhe
 
 RUN pip install kfp==2.14.6 kfp-kubernetes==2.14.6 spikee==0.4.6
 
-COPY settings.json /opt/app-root/src/.vscode/settings.json
+# COPY settings.json /opt/app-root/src/.vscode/settings.json
 
-RUN cat /opt/app-root/src/.vscode/settings.json
+USER root
+COPY run-code-server.sh /opt/app-root/bin/run-code-server.sh
+COPY startup.sh /opt/app-root/bin/startup.sh
+RUN chmod +x /opt/app-root/bin/run-code-server.sh /opt/app-root/bin/startup.sh
+
+USER 1001
+ENTRYPOINT [ "startup.sh" ]
