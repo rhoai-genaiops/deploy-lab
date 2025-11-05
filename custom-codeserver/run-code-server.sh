@@ -25,18 +25,11 @@ create_dir_and_file() {
   if [ ! -d "$dir" ]; then
     echo "Debug: Directory not found, creating '$dir'..."
     mkdir -p "$dir"
-    echo "$content" > "$filepath"
-    echo "Debug: '$filepath' file created."
-  else
-    echo "Debug: Directory already exists."
-    if [ ! -f "$filepath" ]; then
-      echo "Debug: '$filepath' file not found, creating..."
-      echo "$content" > "$filepath"
-      echo "Debug: '$filepath' file created."
-    else
-      echo "Debug: '$filepath' file already exists."
-    fi
   fi
+
+  echo "Debug: Writing to '$filepath'..."
+  echo "$content" > "$filepath"
+  echo "Debug: '$filepath' file updated."
 }
 
 # Define universal settings
