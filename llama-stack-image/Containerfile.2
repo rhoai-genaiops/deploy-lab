@@ -1,0 +1,9 @@
+# FROM registry.redhat.io/rhoai/odh-llama-stack-core-rhel9@sha256:86f8d82f589b4044ce9ac30cb62b4611951d2c383e669c8e2dc5bc74e69e6c86
+FROM quay.io/rhoai-genaiops/llama-stack-vllm-milvus-fms:rhoai-3.0
+# FROM quay.io/opendatahub/llama-stack@sha256:0c6f763da98d4f729a830515974d64cf2116f2d095ca261a9af2c33a0e775505
+
+RUN mkdir -p /opt/app-root/src/.llama/distributions/vllm \
+ && chgrp -R 0 /opt/app-root/src \
+ && chmod -R g=u /opt/app-root/src \
+ && sed -i 's/vector_store_id = f"vs_{uuid.uuid4()}"/vector_store_id = extra.get("vector_store_id", f"vs_{uuid.uuid4()}")/' \
+    /opt/app-root/lib/python3.12/site-packages/llama_stack/core/routers/vector_io.py
