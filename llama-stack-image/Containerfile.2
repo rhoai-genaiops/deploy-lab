@@ -3,7 +3,13 @@ FROM quay.io/rhoai-genaiops/llama-stack-vllm-milvus-fms:rhoai-3.0
 # FROM quay.io/opendatahub/llama-stack@sha256:0c6f763da98d4f729a830515974d64cf2116f2d095ca261a9af2c33a0e775505
 
 RUN mkdir -p /opt/app-root/src/.llama/distributions/vllm \
- && chgrp -R 0 /opt/app-root/src \
- && chmod -R g=u /opt/app-root/src \
- && sed -i 's/vector_store_id = f"vs_{uuid.uuid4()}"/vector_store_id = extra.get("vector_store_id", f"vs_{uuid.uuid4()}")/' \
+&& chgrp -R 0 /opt/app-root/src \
+&& chmod -R g=u /opt/app-root/src \
+&& sed -i '/provider_vector_db_id = extra_body.get("provider_vector_db_id")/a\        vector_db_id = extra_body.get("vector_db_id")' \
+    /opt/app-root/lib/python3.12/site-packages/llama_stack/providers/utils/memory/openai_vector_store_mixin.py \
+&& sed -i 's/vector_db_id = provider_vector_db_id or generate_object_id/vector_db_id = vector_db_id or provider_vector_db_id or generate_object_id/' \
+    /opt/app-root/lib/python3.12/site-packages/llama_stack/providers/utils/memory/openai_vector_store_mixin.py \
+&& sed -i '/extra = params.model_extra or {}/a\        vector_db_id = extra.get("vector_db_id")' \
+    /opt/app-root/lib/python3.12/site-packages/llama_stack/core/routers/vector_io.py \
+&& sed -i 's/vector_db_id = f"vs_{uuid.uuid4()}"/vector_db_id = vector_db_id or f"vs_{uuid.uuid4()}"/' \
     /opt/app-root/lib/python3.12/site-packages/llama_stack/core/routers/vector_io.py
