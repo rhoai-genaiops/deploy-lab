@@ -17,5 +17,14 @@ RUN mkdir -p /opt/app-root/src/.llama/distributions/vllm \
 
 RUN mkdir -p /.llama/providers.d/remote/safety
 ADD trusty_fms.yaml /.llama/providers.d/remote/safety/trusty_fms.yaml
-RUN pip install llama-stack-provider-trustyai-fms llama-stack-provider-lmeval 
+# Install latest TrustyAI provider from main branch without overwriting llama-stack
+RUN pip uninstall -y llama-stack-provider-trustyai-fms || true
+# Install TrustyAI provider with --no-deps first to avoid conflicts
+RUN pip install git+https://github.com/trustyai-explainability/llama-stack-provider-trustyai-fms.git@main \
+    --no-deps --force-reinstall
+# Now manually install only the non-llama-stack dependencies
+RUN pip install requests pydantic httpx typing-extensions --upgrade
+# Ensure llama-stack stays at 0.3.0rc2
+RUN pip install llama-stack==0.3.0 --force-reinstall
+RUN pip install llama-stack-provider-lmeval 
 USER 1001
