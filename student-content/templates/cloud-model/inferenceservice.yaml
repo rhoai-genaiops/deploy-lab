@@ -34,7 +34,7 @@ spec:
     tolerations:
       - effect: NoSchedule
         key: nvidia.com/gpu
-        value: Tesla-T4-PRIVATE
+        operator: Exists
 ---
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
