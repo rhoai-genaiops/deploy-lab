@@ -14,3 +14,5 @@ RUN mkdir -p /opt/app-root/src/.llama/distributions/vllm \
     /opt/app-root/lib/python3.12/site-packages/llama_stack/core/routers/vector_io.py \
 && sed -i 's/vector_db_id = f"vs_{uuid.uuid4()}"/vector_db_id = vector_db_id or f"vs_{uuid.uuid4()}"/' \
     /opt/app-root/lib/python3.12/site-packages/llama_stack/core/routers/vector_io.py
+RUN mkdir -p /opt/app-root/src/.llama/providers.d/remote/safety
+ADD trusty_fms.yaml /opt/app-root/src/.llama/providers.d/remote/safety/trusty_fms.yaml

@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  user-signup:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - CLUSTER_DOMAIN=${CLUSTER_DOMAIN:-example.com}
+      - USER_PASSWORD=${USER_PASSWORD:-changeme}
+      - MAX_USERS=${MAX_USERS:-25}
+      - LAB_INSTRUCTIONS_URL=https://rhoai-genaiops.github.io/lab-instructions/
+    volumes:
+      - user-data:/data
+    restart: unless-stopped
+
+volumes:
+  user-data:

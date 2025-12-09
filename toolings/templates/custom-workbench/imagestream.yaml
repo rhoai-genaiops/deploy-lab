@@ -5,7 +5,7 @@ metadata:
   annotations:
     opendatahub.io/notebook-image-desc: A custom workbench that has the necessry configuration for AI501 GenAIOps Enablement on Red Hat AI exercises
     opendatahub.io/notebook-image-name: AI501 - Custom Code Server
-    opendatahub.io/notebook-image-url: 'quay.io/rhoai-genaiops/codeserver:0.1'
+    opendatahub.io/notebook-image-url: 'quay.io/rhoai-genaiops/codeserver:0.2'
     opendatahub.io/recommended-accelerators: '[]'
   name: ai501-custom-code-server
   namespace: redhat-ods-applications
@@ -24,7 +24,7 @@ spec:
         openshift.io/imported-from: 'quay.io/rhoai-genaiops/codeserver:0.1'
       from:
         kind: DockerImage
-        name: 'quay.io/rhoai-genaiops/codeserver:0.1'
+        name: 'quay.io/rhoai-genaiops/codeserver:0.2'
       generation: 2
       importPolicy:
         importMode: Legacy

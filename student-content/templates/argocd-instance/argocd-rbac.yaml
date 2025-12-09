@@ -117,21 +117,21 @@ rules:
   - get
   - list
   - watch
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  labels:
-    app.kubernetes.io/component: canopy-gitops
-    app.kubernetes.io/name: user{{ $attendee}}-canopy-gitops
-    app.kubernetes.io/part-of: user{{ $attendee}}-canopy
-  name: user{{ $attendee}}-canopy-gitops
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: user{{ $attendee}}-canopy-gitops
-subjects:
-- kind: ServiceAccount
-  name: user{{ $attendee}}-canopy
-  namespace: user{{ $attendee}}-canopy
+# ---
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: ClusterRoleBinding
+# metadata:
+#   labels:
+#     app.kubernetes.io/component: canopy-gitops
+#     app.kubernetes.io/name: user{{ $attendee}}-canopy-gitops
+#     app.kubernetes.io/part-of: user{{ $attendee}}-canopy
+#   name: user{{ $attendee}}-canopy-gitops
+# roleRef:
+#   apiGroup: rbac.authorization.k8s.io
+#   kind: ClusterRole
+#   name: user{{ $attendee}}-canopy-gitops
+# subjects:
+# - kind: ServiceAccount
+#   name: user{{ $attendee}}-canopy
+#   namespace: user{{ $attendee}}-toolings
 {{- end }}

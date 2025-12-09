@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Hat GenAIOps Lab - User Registration</title>
+    <style>
+        /* Red Hat Brand Colors */
+        :root {
+            --rh-red: #EE0000;
+            --rh-dark-red: #A60000;
+            --rh-black: #000000;
+            --rh-white: #FFFFFF;
+            --rh-light-gray: #F5F5F5;
+            --rh-medium-gray: #8A8D90;
+            --rh-dark-gray: #4C4C4C;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Red Hat Display', 'Overpass', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #4C4C4C 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--rh-white);
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 650px;
+            width: 100%;
+            padding: 40px;
+            border-top: 5px solid var(--rh-red);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--rh-light-gray);
+        }
+
+        h1 {
+            color: var(--rh-black);
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: var(--rh-dark-gray);
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+
+        .stats {
+            background: var(--rh-light-gray);
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            text-align: center;
+            border-left: 4px solid var(--rh-red);
+        }
+
+        .stats-text {
+            color: var(--rh-dark-gray);
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .stats-numbers {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--rh-red);
+            margin-top: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="email"]:focus {
+            outline: none;
+            border-color: var(--rh-red);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--rh-red);
+            color: var(--rh-white);
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            background: var(--rh-dark-red);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(238, 0, 0, 0.3);
+        }
+
+        button:disabled {
+            background: var(--rh-medium-gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .credentials {
+            margin-top: 15px;
+            background: var(--rh-white);
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 5px solid var(--rh-red);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .credential-item {
+            margin: 12px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+        }
+
+        .credential-label {
+            font-weight: bold;
+            color: var(--rh-dark-gray);
+            display: inline-block;
+            width: 150px;
+        }
+
+        .credential-value {
+            color: var(--rh-red);
+            font-weight: 700;
+        }
+
+        .instructions {
+            margin-top: 15px;
+            padding: 18px;
+            background: var(--rh-light-gray);
+            border: 2px solid var(--rh-red);
+            border-radius: 5px;
+            color: var(--rh-dark-gray);
+            line-height: 1.6;
+        }
+
+        .instructions strong {
+            color: var(--rh-black);
+        }
+
+        .instructions-highlight {
+            background: #FFF3CD;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .lab-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 24px;
+            background: var(--rh-red);
+            color: var(--rh-white);
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .lab-link:hover {
+            background: var(--rh-dark-red);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid var(--rh-light-gray);
+            border-top: 3px solid var(--rh-red);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .rh-logo {
+            color: var(--rh-red);
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-section">
+            <div class="rh-logo">Red Hat Presents</div>
+        </div>
+        <h1>GenAIOps Lab Registration 🤖🌳</h1>
+        <p class="subtitle">Register to get your lab credentials</p>
+
+        <div class="stats">
+            <div class="stats-text">Users Registered</div>
+            <div class="stats-numbers">
+                <span id="assignedCount">{{ assigned_count }}</span> / {{ max_users }}
+            </div>
+        </div>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="your.email@example.com"
+                    required
+                >
+            </div>
+
+            <button type="submit" id="submitBtn">Get Lab Credentials</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('signupForm');
+        const resultDiv = document.getElementById('result');
+        const loading = document.getElementById('loading');
+        const submitBtn = document.getElementById('submitBtn');
+        const assignedCountSpan = document.getElementById('assignedCount');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+
+            // Clear previous results
+            resultDiv.style.display = 'none';
+            resultDiv.className = 'result';
+
+            // Show loading
+            loading.style.display = 'block';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Success
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>Registration Successful!</h3>
+                        <div class="credentials">
+                            <div class="credential-item">
+                                <span class="credential-label">Username:</span>
+                                <span class="credential-value">${data.username}</span>
+                            </div>
+                            <div class="credential-item">
+                                <span class="credential-label">Password:</span>
+                                <span class="credential-value">${data.password}</span>
+                            </div>
+                            <div class="credential-item">
+                                <span class="credential-label">Cluster Domain:</span>
+                                <span class="credential-value">${data.cluster_domain}</span>
+                            </div>
+                        </div>
+                        <div class="instructions">
+                            <strong>Next Steps:</strong><br>
+                            1. Click the "Open Lab Instructions" button below<br>
+                            2. At the top of the lab page, you'll see three boxes: <strong>Username</strong>, <strong>Password</strong>, and <strong>Cluster Domain</strong><br>
+                            3. Copy and paste your credentials from above into those boxes and hit <strong>Save</strong><br>
+                            4. Start your lab exercises!
+                            <div class="instructions-highlight">
+                                💡 <strong>Tip:</strong> Keep this page open as a reference for your credentials throughout the lab.
+                            </div>
+                        </div>
+                        <a href="${data.lab_url}" target="_blank" class="lab-link">
+                            Open Lab Instructions →
+                        </a>
+                    `;
+                    resultDiv.style.display = 'block';
+
+                    // Update stats
+                    updateStats();
+
+                    // Clear form
+                    form.reset();
+                } else {
+                    // Error
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>Registration Failed</h3>
+                        <p>${data.error}</p>
+                    `;
+                    resultDiv.style.display = 'block';
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>Error</h3>
+                    <p>An unexpected error occurred. Please try again.</p>
+                `;
+                resultDiv.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+
+        async function updateStats() {
+            try {
+                const response = await fetch('/stats');
+                const data = await response.json();
+                assignedCountSpan.textContent = data.assigned;
+            } catch (error) {
+                console.error('Failed to update stats:', error);
+            }
+        }
+
+        // Update stats every 30 seconds
+        setInterval(updateStats, 30000);
+    </script>
+</body>
+</html>
