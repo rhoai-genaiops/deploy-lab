@@ -3,6 +3,9 @@ FROM registry.redhat.io/rhoai/odh-workbench-codeserver-datascience-cpu-py312-rhe
 
 RUN pip install kfp==2.14.6 kfp-kubernetes==2.14.6 spikee==0.4.6
 
+# Install pre-reqs for compression lab
+RUN pip install llmcompressor==0.8.1 transformers>=4.46.0 datasets==4.1.1 accelerate==1.10.1 torch==2.8.0
+
 # COPY settings.json /opt/app-root/src/.vscode/settings.json
 
 USER root
