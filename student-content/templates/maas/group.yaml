@@ -1,0 +1,10 @@
+---
+kind: Group
+apiVersion: user.openshift.io/v1
+metadata:
+  name: litemaas-admins
+users:
+{{- $attendees := (add1 .Values.attendees | int) }}
+{{- range $attendee := untilStep 1 $attendees 1 }}
+  - user{{ $attendee }}
+{{- end }}

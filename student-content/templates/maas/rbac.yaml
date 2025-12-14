@@ -1,0 +1,34 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: oauthclient-creator
+rules:
+- apiGroups:
+  - oauth.openshift.io
+  resources:
+  - oauthclients
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - delete
+---
+{{ $attendees := (add1 .Values.attendees | int) }}
+{{- range $attendee := untilStep 1 $attendees 1 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: user{{ $attendee }}-oauthclient-creator
+subjects:
+- kind: User
+  name: user{{ $attendee }}
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: oauthclient-creator
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
