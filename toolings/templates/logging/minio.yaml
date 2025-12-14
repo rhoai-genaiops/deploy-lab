@@ -9,7 +9,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
+      storage: 80Gi # bumped from 20Gi to 80Gi to handle log volume
   volumeMode: Filesystem
 ---
 kind: Deployment
