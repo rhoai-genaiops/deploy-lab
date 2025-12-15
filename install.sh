@@ -21,17 +21,17 @@ oc -n openshift-user-workload-monitoring patch configmap user-workload-monitorin
 # oc patch config.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
 
 # Make ArgoCD cluster wide
-# attendees=`grep attendees student-content/values.yaml | cut -d':' -f2`
-#  for ((i=0; i<=$attendees; i++))
-#  do
-#    if [ $i -eq 1 ]; then
-#      NS="user$i-toolings"
-#    else
-#      NS+="$var,user$i-toolings"
-#    fi
-#  done
-#  oc -n openshift-gitops-operator patch subscriptions.operators.coreos.com/openshift-gitops-operator --type=json \
-#          -p '[{"op":"'add'","path":"/spec/config/env", "value":[{"name": "DISABLE_DEFAULT_ARGOCD_INSTANCE", "value":"true"}] },{"op":"'add'","path":"/spec/config/env/1","value":{"name": "ARGOCD_CLUSTER_CONFIG_NAMESPACES", "value":"'${NS}'"}}]'
+attendees=`grep attendees student-content/values.yaml | cut -d':' -f2`
+ for ((i=0; i<=$attendees; i++))
+ do
+   if [ $i -eq 1 ]; then
+     NS="user$i-toolings"
+   else
+     NS+="$var,user$i-toolings"
+   fi
+ done
+ oc -n openshift-gitops-operator patch subscriptions.operators.coreos.com/openshift-gitops-operator --type=json \
+         -p '[{"op":"'add'","path":"/spec/config/env", "value":[{"name": "DISABLE_DEFAULT_ARGOCD_INSTANCE", "value":"true"}] },{"op":"'add'","path":"/spec/config/env/1","value":{"name": "ARGOCD_CLUSTER_CONFIG_NAMESPACES", "value":"'${NS}'"}}]'
 
 
 oc patch tektonconfig config --type merge -p '{"spec":{"pipeline":{"disable-affinity-assistant":true}}}'
