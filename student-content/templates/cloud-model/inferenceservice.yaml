@@ -96,7 +96,7 @@ spec:
     name: llama-32-predictor
     weight: 100
   port:
-    targetPort: http1
+    targetPort: http
   tls:
     termination: edge
     insecureEdgeTerminationPolicy: Redirect
