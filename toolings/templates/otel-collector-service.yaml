@@ -4,6 +4,11 @@ kind: Service
 metadata:
   name: data-science-collector
   namespace: redhat-ods-monitoring
+  labels:
+    app.kubernetes.io/component: opentelemetry-collector
+    app.kubernetes.io/instance: redhat-ods-monitoring.data-science-collector
+    app.kubernetes.io/managed-by: opentelemetry-operator
+    app.kubernetes.io/part-of: opentelemetry
 spec:
   ports:
   - appProtocol: grpc
