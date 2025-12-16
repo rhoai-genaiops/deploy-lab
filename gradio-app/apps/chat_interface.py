@@ -60,32 +60,7 @@ def chat_with_model_stream(message, temperature=0.7):
         yield f"An error occurred: {str(e)}"
 
 def create_chat_interface():
-    with gr.Blocks(css="""
-        .gradio-container {width: 800px !important; margin: 0 !important;}
-        .contain {max-width: 800px !important;}
-        #chatbot {height: 400px !important;}
-        .main {padding: 0 !important; margin: 0 !important;}
-        .app {padding-left: 1rem !important;}
-        /* Override default Enter key behavior */
-        textarea {
-            resize: none !important;
-        }
-        /* Align input components in the same row */
-        .gradio-container .row {
-            align-items: end !important;
-        }
-        .gradio-container .row > div {
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: flex-end !important;
-        }
-        /* Make message textbox double height */
-        .gradio-container .row textarea {
-            height: 95px !important;
-            min-height: 95px !important;
-            max-height: 95px !important;
-        }
-    """) as interface:
+    with gr.Blocks() as interface:
         with gr.Column():
             gr.Markdown(
                 f"Using Model URL: {BASE_URL}/v1/chat/completions",
@@ -98,7 +73,6 @@ def create_chat_interface():
                 max_lines=25,
                 interactive=False,
                 placeholder="AI response will appear here...",
-                show_copy_button=True,
                 elem_classes="contain"
             )
             

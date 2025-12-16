@@ -58,13 +58,7 @@ def chat_with_model_stream(message, max_tokens=30):
         yield f"An error occurred: {str(e)}"
 
 def create_context_demo():
-    with gr.Blocks(css="""
-        .gradio-container {width: 800px !important; margin: 0 !important;}
-        .contain {max-width: 800px !important;}
-        #chatbot {height: 400px !important;}
-        .main {padding: 0 !important; margin: 0 !important;}
-        .app {padding-left: 1rem !important;}
-    """) as interface:
+    with gr.Blocks() as interface:
         with gr.Column():
             gr.Markdown(
                 """# Limited Context Demo""",
@@ -74,9 +68,7 @@ def create_context_demo():
             chatbot = gr.Chatbot(
                 label="Chat History",
                 elem_id="chatbot",
-                container=False,
-                height=400,
-                type="messages"  # Use new message format
+                height=400
             )
             
             msg = gr.Textbox(
