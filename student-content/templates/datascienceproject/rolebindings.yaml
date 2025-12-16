@@ -140,4 +140,48 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: view
+---
+# Custom ClusterRole for scoped Prometheus API access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-monitoring-view-user{{ $attendee }}
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - ai501
+  - redhat-ods-monitoring
+  - user{{ $attendee }}-test
+  - user{{ $attendee }}-prod
+  - user{{ $attendee }}-toolings
+  - user{{ $attendee }}-canopy
+  resources:
+  - namespaces
+  verbs:
+  - get
+- apiGroups:
+  - monitoring.coreos.com
+  resourceNames:
+  - k8s
+  resources:
+  - prometheuses/api
+  verbs:
+  - get
+  - create
+  - update
+---
+# Bind custom monitoring ClusterRole to user
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-monitoring-view-user{{ $attendee }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-monitoring-view-user{{ $attendee }}
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: user{{ $attendee }}
 {{- end }}
