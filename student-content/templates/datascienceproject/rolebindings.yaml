@@ -126,6 +126,21 @@ roleRef:
   kind: ClusterRole
   name: view
 ---
+# Allow Grafana service account to query metrics from ai501 namespace
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ai501-user{{ $attendee }}-grafana-metrics-view
+  namespace: ai501
+subjects:
+  - kind: ServiceAccount
+    name: canopy-grafana-sa
+    namespace: user{{ $attendee }}-toolings
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+---
 # Allow users to query metrics from ai501 namespace
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
