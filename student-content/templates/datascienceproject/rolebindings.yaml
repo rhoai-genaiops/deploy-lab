@@ -142,7 +142,7 @@ rules:
       - redhat-ods-monitoring
       - user{{ $attendee }}-test
       - user1-prod
-      - user1-toolings
+      - user{{ $attendee }}-toolings
       - user{{ $attendee }}-canopy
   - verbs:
       - get
