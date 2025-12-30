@@ -143,7 +143,7 @@ rules:
       - user{{ $attendee }}-test
       - user1-prod
       - user1-toolings
-      - user1-canopy
+      - user{{ $attendee }}-canopy
   - verbs:
       - get
       - create
