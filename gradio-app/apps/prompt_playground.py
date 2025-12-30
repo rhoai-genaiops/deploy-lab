@@ -97,8 +97,7 @@ def create_prompt_playground():
                     lines=20,
                     max_lines=30,
                     interactive=False,
-                    placeholder="AI response will appear here...",
-                    show_copy_button=True
+                    placeholder="AI response will appear here..."
                 )
 
             # History Column
