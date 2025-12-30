@@ -140,7 +140,7 @@ rules:
     resourceNames:
       - ai501
       - redhat-ods-monitoring
-      - user1-test
+      - user{{ $attendee }}-test
       - user1-prod
       - user1-toolings
       - user1-canopy
