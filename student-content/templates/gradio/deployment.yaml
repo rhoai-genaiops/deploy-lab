@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: gradio-app
-        image: quay.io/rhoai-genaiops/gradio-app:0.0.2
+        image: quay.io/rhoai-genaiops/gradio-app:0.0.3
         imagePullPolicy: Always
         env:
         - name: MODEL_URL
@@ -28,6 +28,10 @@ spec:
           value: https://tinyllama-ai501.{{ .Values.cluster_domain }}
         - name: TINY_MODEL_NAME
           value: "{{ .Values.tinyModelName | default "tinyllama" }}"
+        - name: COMPRESSED_MODEL_URL
+          value: https://llama32-fp8-ai501.{{ .Values.cluster_domain }}
+        - name: COMPRESSED_MODEL_NAME
+          value: "{{ .Values.compressedModelName | default "RedHatAI/Llama-3.2-3B-Instruct-FP8" }}"
         ports:
         - containerPort: 7860
           name: http
