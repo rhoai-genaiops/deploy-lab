@@ -141,7 +141,7 @@ rules:
       - ai501
       - redhat-ods-monitoring
       - user{{ $attendee }}-test
-      - user1-prod
+      - user{{ $attendee }}-prod
       - user{{ $attendee }}-toolings
       - user{{ $attendee }}-canopy
   - verbs:
