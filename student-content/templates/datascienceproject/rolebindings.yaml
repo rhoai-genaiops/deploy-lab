@@ -152,8 +152,6 @@ rules:
   resourceNames:
   - ai501
   - redhat-ods-monitoring
-  - user{{ $attendee }}-test
-  - user{{ $attendee }}-prod
   - user{{ $attendee }}-toolings
   - user{{ $attendee }}-canopy
   resources:

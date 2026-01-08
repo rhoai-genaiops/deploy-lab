@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: rdu-website
-        image: quay.io/rhoai-genaiops/rdu-website:0.0.1
+        image: quay.io/rhoai-genaiops/rdu-website:0.0.2
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
