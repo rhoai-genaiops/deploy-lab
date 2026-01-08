@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>The AI Orientation</h1>
+            <p class="subtitle">Interactive exercises to explore LLM fundamentals</p>
+        </header>
+
+        <main class="exercises-grid">
+            {% for exercise in exercises %}
+            <a href="{{ exercise.url }}"
+               class="exercise-card"
+               {% if exercise.external %}target="_blank" rel="noopener noreferrer"{% endif %}>
+                <div class="card-icon">
+                    <i class="fas fa-{{ exercise.icon }}"></i>
+                </div>
+                <div class="card-content">
+                    <h2>{{ exercise.title }}</h2>
+                    <p>{{ exercise.description }}</p>
+                </div>
+                <div class="card-arrow">
+                    {% if exercise.external %}
+                    <i class="fas fa-external-link-alt"></i>
+                    {% else %}
+                    <i class="fas fa-chevron-right"></i>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </main>
+
+        <footer>
+            <p>GenAIOps Enablement with Red Hat AI</p>
+        </footer>
+    </div>
+</body>
+</html>

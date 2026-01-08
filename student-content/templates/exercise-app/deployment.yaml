@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exercise-app
+  labels:
+    app: exercise-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exercise-app
+  template:
+    metadata:
+      labels:
+        app: exercise-app
+    spec:
+      containers:
+      - name: exercise-app
+        image: quay.io/rhoai-genaiops/exercise-app:0.0.1
+        imagePullPolicy: Always
+        env:
+        - name: GRADIO_APP_URL
+          value: https://gradio-app-ai501.{{ .Values.cluster_domain }}
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      restartPolicy: Always

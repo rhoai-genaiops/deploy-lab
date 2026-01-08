@@ -1,0 +1,187 @@
+/* Mobile-first responsive design */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #ee0000;
+    --primary-dark: #a30000;
+    --bg-color: #f5f5f5;
+    --card-bg: #ffffff;
+    --text-primary: #151515;
+    --text-secondary: #6a6e73;
+    --border-radius: 12px;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    text-align: center;
+    padding: 24px 0 32px;
+}
+
+header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+header .subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+main.exercises-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+.exercise-card {
+    display: flex;
+    align-items: center;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: var(--shadow);
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.exercise-card:hover {
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.exercise-card:active {
+    transform: translateY(0);
+}
+
+.card-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-icon i {
+    color: white;
+    font-size: 1.25rem;
+}
+
+.card-content {
+    flex: 1;
+    padding: 0 14px;
+}
+
+.card-content h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.card-content p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.card-arrow {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.exercise-card:hover .card-arrow {
+    color: var(--primary-color);
+}
+
+footer {
+    text-align: center;
+    padding: 24px 0 16px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* Tablet and larger */
+@media (min-width: 600px) {
+    .container {
+        padding: 32px 24px;
+    }
+
+    header {
+        padding: 32px 0 40px;
+    }
+
+    header h1 {
+        font-size: 2rem;
+    }
+
+    main.exercises-grid {
+        gap: 16px;
+    }
+
+    .exercise-card {
+        padding: 20px;
+    }
+
+    .card-icon {
+        width: 56px;
+        height: 56px;
+    }
+
+    .card-icon i {
+        font-size: 1.4rem;
+    }
+
+    .card-content h2 {
+        font-size: 1.1rem;
+    }
+
+    .card-content p {
+        font-size: 0.9rem;
+    }
+}
+
+/* Desktop */
+@media (min-width: 900px) {
+    .container {
+        padding: 40px 32px;
+    }
+
+    header h1 {
+        font-size: 2.25rem;
+    }
+
+    header .subtitle {
+        font-size: 1.05rem;
+    }
+}
