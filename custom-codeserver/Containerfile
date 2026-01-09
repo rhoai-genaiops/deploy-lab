@@ -1,13 +1,9 @@
 # FROM registry.redhat.io/rhoai/odh-workbench-codeserver-datascience-cpu-py312-rhel9@sha256:2fbf4b2214fc6136fce252d81d3d51c6316830aacf95f8398f89e08bde50f766
 FROM registry.redhat.io/rhoai/odh-workbench-codeserver-datascience-cpu-py312-rhel9@sha256:0c222e02ac68a3d4b7db535a168c959ae44992767b64c405d72c531624c60bc1
 
-RUN pip install kfp==2.14.6 kfp-kubernetes==2.14.6 spikee==0.4.6
+ADD . .
 
-# Install pre-reqs for compression lab
-RUN pip install llmcompressor==0.8.1 transformers>=4.46.0 datasets==4.1.1 accelerate==1.10.1 torch==2.8.0
-
-# Install pre-reqs for lm_eval in compression lab
-RUN pip install lm_eval=="0.4.9.2" tenacity=="9.1.2" 
+RUN pip install --no-deps -r frozen-requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
 # COPY settings.json /opt/app-root/src/.vscode/settings.json
 
