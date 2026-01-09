@@ -1,0 +1,29 @@
+{
+  "name": "canopy-credits-board",
+  "version": "1.0.0",
+  "description": "Canopy Credits Board - A fun, interactive dashboard for tracking team efforts with llama-coins",
+  "private": true,
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm run build && cd ../server && npm run build",
+    "start": "cd server && npm start",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "keywords": [
+    "gamification",
+    "leaderboard",
+    "dashboard",
+    "kubernetes"
+  ],
+  "author": "Platform Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
