@@ -8,7 +8,7 @@ This repository provides a complete deployment solution for the AI501 GenAIOps l
 
 ## Prerequisites
 
-- OpenShift 4.14+ cluster with cluster-admin access
+- OpenShift 4.119+ cluster with cluster-admin access
 - Helm 3.x installed
 - `oc` CLI configured and authenticated
 - (Optional) AWS credentials for GPU machine provisioning
