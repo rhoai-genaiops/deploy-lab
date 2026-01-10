@@ -16,6 +16,7 @@ INSTANCE_TYPES=(
   "L40S Single GPU:g6e.2xlarge"
   "L40S Multi GPU x4:g6e.12xlarge"
   "L40S Multi GPU x8:g6e.48xlarge"
+  "H200:p5en.48xlarge"
 )
 
 ### Function to get instance type
@@ -48,6 +49,7 @@ options=(
   "L40S Single GPU"
   "L40S Multi GPU x4"
   "L40S Multi GPU x8"
+  "H200"
 )
 select opt in "${options[@]}"
 do
@@ -125,6 +127,9 @@ case $GPU_TYPE in
     ;;
   "L40S Multi GPU x4"|"L40S Multi GPU x8")
     ACCELERATOR_LABEL="NVIDIA-L40S-MULTI-$GPU_ACCESS_TYPE"
+    ;;
+  "H200")
+    ACCELERATOR_LABEL="NVIDIA-H200-$GPU_ACCESS_TYPE"
     ;;
   *)
     ACCELERATOR_LABEL=""
