@@ -3,9 +3,9 @@ apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
   annotations:
-    openshift.io/display-name: llama-32
+    openshift.io/display-name: llama-32-fp8
     serving.kserve.io/deploymentMode: RawDeployment
-  name: llama-32
+  name: llama-32-fp8
   namespace: ai501
   labels:
     opendatahub.io/dashboard: 'true'
@@ -18,7 +18,6 @@ spec:
     minReplicas: 0
     model:
       args:
-        - '--dtype=half'
         - '--max-model-len=20000' # to be adjusted to the max capacity of GPU used
         - '--gpu-memory-utilization=0.95'
         - '--enable-auto-tool-choice'
@@ -36,8 +35,8 @@ spec:
           cpu: '1'
           memory: 8Gi
           nvidia.com/gpu: '1'
-      runtime: llama-32
-      storageUri: 'oci://quay.io/redhat-ai-services/modelcar-catalog:llama-3.2-3b-instruct'
+      runtime: llama-32-fp8
+      storageUri: 'oci://quay.io/rhoai-genaiops/llama32-3b-instruct-fp8:latest'
     tolerations:
       - effect: NoSchedule
         key: nvidia.com/gpu
@@ -55,8 +54,8 @@ metadata:
     opendatahub.io/apiProtocol: REST
     opendatahub.io/template-display-name: vLLM
     opendatahub.io/template-name: vllm
-    openshift.io/display-name: llama-32
-  name: llama-32
+    openshift.io/display-name: llama-32-fp8
+  name: llama-32-fp8
   namespace: ai501
   labels:
     opendatahub.io/dashboard: 'true'
@@ -68,7 +67,7 @@ spec:
     - args:
         - '--port=8080'
         - '--model=/mnt/models'
-        - '--served-model-name=llama32'
+        - '--served-model-name=llama32-fp8'
       command:
         - python
         - '-m'
@@ -89,15 +88,15 @@ spec:
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: llama32
+  name: llama32-fp8
   namespace: ai501
   labels:
-    app: llama-32
+    app: llama-32-fp8
 spec:
   path: /
   to:
     kind: Service
-    name: llama-32-predictor
+    name: llama-32-fp8-predictor
     weight: 100
   port:
     targetPort: http

@@ -1,0 +1,31 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: model-catalog-sources-cleanup
+  namespace: rhoai-model-registries
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ .Values.modelCatalog.serviceAccountName | default "model-catalog-cleanup-sa" }}
+      containers:
+        - name: cleanup
+          image: registry.redhat.io/openshift4/ose-cli:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Checking for existing model-catalog-sources ConfigMap..."
+              if oc get configmap model-catalog-sources -n rhoai-model-registries 2>/dev/null; then
+                echo "Found existing ConfigMap, deleting..."
+                oc delete configmap model-catalog-sources -n rhoai-model-registries --ignore-not-found
+                echo "ConfigMap deleted successfully"
+              else
+                echo "ConfigMap does not exist, nothing to delete"
+              fi

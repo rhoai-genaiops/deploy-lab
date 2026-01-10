@@ -1,141 +1,141 @@
-# ---
-# kind: ConfigMap
-# apiVersion: v1
-# metadata:
-#   name: model-catalog-sources
-#   namespace: rhoai-model-registries
-#   labels:
-#     app: model-catalog
-#     app.kubernetes.io/component: model-catalog
-#     app.kubernetes.io/name: model-catalog
-#     component: model-catalog
-# data:
-#   sources.yaml: |-
-#     catalogs:
-#       - name: Redwood Digital University AI Catalog
-#         id: rdu_models
-#         type: yaml
-#         properties:
-#           yamlCatalogPath: tinyllama-catalog.yaml
-#   tinyllama-catalog.yaml: |-
-#     source: Hugging Face
-#     models:
-#     - name: TinyLlama/TinyLlama-1.1B-Chat-v1.0
-#       description: TinyLlama is a compact 1.1B parameter language model pretrained on 3 trillion tokens, fine-tuned for chat applications and optimized for CPU inference.
-#       readme: |-
-#         # Model Card for TinyLlama-1.1B-Chat-v1.0
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: model-catalog-sources
+  namespace: rhoai-model-registries
+  labels:
+    app: model-catalog
+    app.kubernetes.io/component: model-catalog
+    app.kubernetes.io/name: model-catalog
+    component: model-catalog
+data:
+  sources.yaml: |-
+    catalogs:
+      - name: Redwood Digital University AI Catalog
+        id: rdu_models
+        type: yaml
+        properties:
+          yamlCatalogPath: tinyllama-catalog.yaml
+  tinyllama-catalog.yaml: |-
+    source: Hugging Face
+    models:
+    - name: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+      description: TinyLlama is a compact 1.1B parameter language model pretrained on 3 trillion tokens, fine-tuned for chat applications and optimized for CPU inference.
+      readme: |-
+        # Model Card for TinyLlama-1.1B-Chat-v1.0
 
-#         TinyLlama is a compact 1.1B parameter language model pretrained on 3 trillion tokens. This chat model is fine-tuned on a mix of publicly available instruction datasets.
+        TinyLlama is a compact 1.1B parameter language model pretrained on 3 trillion tokens. This chat model is fine-tuned on a mix of publicly available instruction datasets.
 
-#         ## Key Features
+        ## Key Features
 
-#         - **Compact Size**: 1.1B parameters, suitable for CPU-only deployment
-#         - **Efficient Training**: Trained on 3 trillion tokens using the same architecture and tokenizer as Llama 2
-#         - **Chat Optimized**: Fine-tuned specifically for conversational AI applications
-#         - **Low Resource Requirements**: Can run on CPU without GPU acceleration
+        - **Compact Size**: 1.1B parameters, suitable for CPU-only deployment
+        - **Efficient Training**: Trained on 3 trillion tokens using the same architecture and tokenizer as Llama 2
+        - **Chat Optimized**: Fine-tuned specifically for conversational AI applications
+        - **Low Resource Requirements**: Can run on CPU without GPU acceleration
 
-#         ## Model Details
+        ## Model Details
 
-#         - **Architecture**: Based on Llama 2 architecture
-#         - **Parameters**: 1.1B
-#         - **Training Tokens**: 3 trillion
-#         - **Context Length**: 2048 tokens
-#         - **Vocabulary Size**: 32,000
+        - **Architecture**: Based on Llama 2 architecture
+        - **Parameters**: 1.1B
+        - **Training Tokens**: 3 trillion
+        - **Context Length**: 2048 tokens
+        - **Vocabulary Size**: 32,000
 
-#         ## Usage
+        ## Usage
 
-#         ### With Transformers
+        ### With Transformers
 
-#         ```python
-#         from transformers import AutoTokenizer, AutoModelForCausalLM
-#         import torch
+        ```python
+        from transformers import AutoTokenizer, AutoModelForCausalLM
+        import torch
 
-#         model_id = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-#         tokenizer = AutoTokenizer.from_pretrained(model_id)
-#         model = AutoModelForCausalLM.from_pretrained(model_id)
+        model_id = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        model = AutoModelForCausalLM.from_pretrained(model_id)
 
-#         messages = [
-#             {"role": "system", "content": "You are a helpful assistant."},
-#             {"role": "user", "content": "What is machine learning?"}
-#         ]
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "What is machine learning?"}
+        ]
 
-#         prompt = tokenizer.apply_chat_template(
-#             messages,
-#             tokenize=False,
-#             add_generation_prompt=True
-#         )
+        prompt = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
+        )
 
-#         inputs = tokenizer(prompt, return_tensors="pt")
-#         outputs = model.generate(**inputs, max_new_tokens=256)
-#         print(tokenizer.decode(outputs[0], skip_special_tokens=True))
-#         ```
+        inputs = tokenizer(prompt, return_tensors="pt")
+        outputs = model.generate(**inputs, max_new_tokens=256)
+        print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+        ```
 
-#         ### With vLLM (CPU)
+        ### With vLLM (CPU)
 
-#         TinyLlama works well with vLLM for high-throughput CPU inference:
+        TinyLlama works well with vLLM for high-throughput CPU inference:
 
-#         ```python
-#         from vllm import LLM, SamplingParams
+        ```python
+        from vllm import LLM, SamplingParams
 
-#         llm = LLM(model="TinyLlama/TinyLlama-1.1B-Chat-v1.0")
-#         sampling_params = SamplingParams(temperature=0.7, max_tokens=256)
+        llm = LLM(model="TinyLlama/TinyLlama-1.1B-Chat-v1.0")
+        sampling_params = SamplingParams(temperature=0.7, max_tokens=256)
 
-#         prompts = ["What is the capital of France?"]
-#         outputs = llm.generate(prompts, sampling_params)
-#         ```
+        prompts = ["What is the capital of France?"]
+        outputs = llm.generate(prompts, sampling_params)
+        ```
 
-#         ## Chat Template
+        ## Chat Template
 
-#         TinyLlama uses the ChatML format:
+        TinyLlama uses the ChatML format:
 
-#         ```
-#         <|system|>
-#         You are a helpful assistant.</s>
-#         <|user|>
-#         Hello!</s>
-#         <|assistant|>
-#         ```
+        ```
+        <|system|>
+        You are a helpful assistant.</s>
+        <|user|>
+        Hello!</s>
+        <|assistant|>
+        ```
 
-#         ## Limitations
+        ## Limitations
 
-#         - Smaller capacity compared to larger models (7B+)
-#         - May produce less nuanced responses for complex queries
-#         - Best suited for simple conversational tasks and quick inference
-#         - Context window limited to 2048 tokens
+        - Smaller capacity compared to larger models (7B+)
+        - May produce less nuanced responses for complex queries
+        - Best suited for simple conversational tasks and quick inference
+        - Context window limited to 2048 tokens
 
-#         ## Use Cases
+        ## Use Cases
 
-#         - Edge deployment and resource-constrained environments
-#         - CPU-only inference scenarios
-#         - Rapid prototyping and development
-#         - Educational and experimental purposes
+        - Edge deployment and resource-constrained environments
+        - CPU-only inference scenarios
+        - Rapid prototyping and development
+        - Educational and experimental purposes
 
-#         ## Training Data
+        ## Training Data
 
-#         The model was fine-tuned on a combination of:
-#         - OpenAssistant Conversations Dataset (oasst1)
-#         - UltraChat dataset
+        The model was fine-tuned on a combination of:
+        - OpenAssistant Conversations Dataset (oasst1)
+        - UltraChat dataset
 
-#         ## License
+        ## License
 
-#         Apache 2.0
+        Apache 2.0
 
-#         ## Citation
+        ## Citation
 
-#         ```bibtex
-#         @misc{zhang2024tinyllama,
-#           title={TinyLlama: An Open-Source Small Language Model},
-#           author={Peiyuan Zhang and Guangtao Zeng and Tianduo Wang and Wei Lu},
-#           year={2024},
-#           eprint={2401.02385},
-#           archivePrefix={arXiv},
-#           primaryClass={cs.CL}
-#         }
-#         ```
-#       provider: TinyLlama Team
-#       logo: https://t3.ftcdn.net/jpg/12/89/39/80/360_F_1289398029_cOe8JBVw4fRWK2pxGQAi0ihaS0fC4Qqi.jpg
-#       license: apache-2.0
-#       licenseLink: https://www.apache.org/licenses/LICENSE-2.0.txt
-#       libraryName: transformers
-#       artifacts:
-#         - uri: oci://quay.io/rh-aiservices-bu/tinyllama:1.0
+        ```bibtex
+        @misc{zhang2024tinyllama,
+          title={TinyLlama: An Open-Source Small Language Model},
+          author={Peiyuan Zhang and Guangtao Zeng and Tianduo Wang and Wei Lu},
+          year={2024},
+          eprint={2401.02385},
+          archivePrefix={arXiv},
+          primaryClass={cs.CL}
+        }
+        ```
+      provider: TinyLlama Team
+      logo: https://t3.ftcdn.net/jpg/12/89/39/80/360_F_1289398029_cOe8JBVw4fRWK2pxGQAi0ihaS0fC4Qqi.jpg
+      license: apache-2.0
+      licenseLink: https://www.apache.org/licenses/LICENSE-2.0.txt
+      libraryName: transformers
+      artifacts:
+        - uri: oci://quay.io/rh-aiservices-bu/tinyllama:1.0
