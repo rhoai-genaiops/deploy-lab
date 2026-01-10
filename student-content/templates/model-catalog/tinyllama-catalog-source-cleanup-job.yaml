@@ -13,7 +13,7 @@ spec:
   template:
     spec:
       restartPolicy: Never
-      serviceAccountName: {{ .Values.modelCatalog.serviceAccountName | default "model-catalog-cleanup-sa" }}
+      serviceAccountName: model-catalog-cleanup-sa
       containers:
         - name: cleanup
           image: registry.redhat.io/openshift4/ose-cli:latest
