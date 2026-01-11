@@ -85,7 +85,7 @@ def create_prompt_playground():
 
                 max_tokens = gr.Slider(label="Max Tokens", minimum=10, maximum=2048, value=100, step=10)
                 temperature = gr.Slider(label="Temperature", minimum=0.0, maximum=1.0, value=0.7, step=0.1)
-                    
+
                 with gr.Row():
                     submit_btn = gr.Button("Send", variant="primary")
                     clear_btn = gr.Button("Clear History", variant="secondary")
@@ -115,10 +115,10 @@ def create_prompt_playground():
                     "user_prompt": user_prompt
                 }
                 updated_history = history + [new_entry]
-                
+
                 # Return updated history display
                 history_display_text = format_history(updated_history)
-                
+
                 return updated_history, history_display_text
 
             submit_btn.click(

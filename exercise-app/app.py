@@ -71,7 +71,7 @@ EXERCISES = [
         "title": "Guardrails",
         "description": "Learn about LLM safety and content moderation",
         "icon": "shield-halved",
-        "url": "https://red.ht/lemon",
+        "url": "https://red.ht/lemonade-stand",
         "external": True,
     },
 ]
