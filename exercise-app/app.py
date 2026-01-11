@@ -66,6 +66,14 @@ EXERCISES = [
         "path": "/optimization",
         "external": False,
     },
+    {
+        "id": "guardrails",
+        "title": "Guardrails",
+        "description": "Learn about LLM safety and content moderation",
+        "icon": "shield-halved",
+        "url": "https://red.ht/lemon",
+        "external": True,
+    },
 ]
 
 

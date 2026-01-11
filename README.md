@@ -19,9 +19,9 @@ This lab requires **3 GPU nodes** with two different taints:
 
 | Component | GPU Count | Instance Type | Taint |
 |-----------|-----------|---------------|-------|
-| Docling Serve | 1 | g4dn (T4) | `nvidia.com/gpu.instance-type=g4dn` |
-| Llama 3.2 (cloud-model) | 1 | g5 (A10G) | `nvidia.com/gpu.instance-type=g5` |
-| Llama 3.2 FP8 (quantized-model) | 1 | g5 (A10G) | `nvidia.com/gpu.instance-type=g5` |
+| Docling Serve | 1 | g4dn (T4) | `nvidia.com/gpu=g4dn` |
+| Llama 3.2 (cloud-model) | 1 | g5 (A10G) | `nvidia.com/gpu=g5` |
+| Llama 3.2 FP8 (quantized-model) | 1 | g5 (A10G) | `nvidia.com/gpu=g5` |
 
 If you have different taints, make sure you update the necessary template for the deployments' tolerations.
 

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: exercise-app
-        image: quay.io/rhoai-genaiops/exercise-app:0.0.1
+        image: quay.io/rhoai-genaiops/exercise-app:0.0.2
         imagePullPolicy: Always
         env:
         - name: GRADIO_APP_URL
