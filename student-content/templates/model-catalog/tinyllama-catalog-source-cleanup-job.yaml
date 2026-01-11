@@ -2,12 +2,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: model-catalog-sources-cleanup
+  name: model-catalog-sources-update
   namespace: rhoai-model-registries
-  annotations:
-    "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-weight": "-5"
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   ttlSecondsAfterFinished: 60
   template:
@@ -15,17 +11,157 @@ spec:
       restartPolicy: Never
       serviceAccountName: model-catalog-cleanup-sa
       containers:
-        - name: cleanup
+        - name: update
           image: registry.redhat.io/openshift4/ose-cli:latest
           command:
             - /bin/sh
             - -c
             - |
-              echo "Checking for existing model-catalog-sources ConfigMap..."
-              if oc get configmap model-catalog-sources -n rhoai-model-registries 2>/dev/null; then
-                echo "Found existing ConfigMap, deleting..."
-                oc delete configmap model-catalog-sources -n rhoai-model-registries --ignore-not-found
-                echo "ConfigMap deleted successfully"
-              else
-                echo "ConfigMap does not exist, nothing to delete"
-              fi
+              echo "Applying model-catalog-sources ConfigMap..."
+              oc apply -f - <<'EOF'
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: model-catalog-sources
+                namespace: rhoai-model-registries
+                labels:
+                  app: model-catalog
+                  app.kubernetes.io/component: model-catalog
+                  app.kubernetes.io/created-by: model-registry-operator
+                  app.kubernetes.io/instance: model-catalog
+                  app.kubernetes.io/managed-by: model-registry-operator
+                  app.kubernetes.io/name: model-catalog
+                  app.kubernetes.io/part-of: model-catalog
+                  component: model-catalog
+              data:
+                sources.yaml: |
+                  catalogs:
+                    - name: Redwood Digital University AI Catalog
+                      id: rdu_models
+                      type: yaml
+                      properties:
+                        yamlCatalogPath: tinyllama-catalog.yaml
+                tinyllama-catalog.yaml: |
+                  source: Hugging Face
+                  models:
+                  - name: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+                    description: TinyLlama is a compact 1.1B parameter language model pretrained on 3 trillion tokens, fine-tuned for chat applications and optimized for CPU inference.
+                    readme: |
+                      # Model Card for TinyLlama-1.1B-Chat-v1.0
+
+                      TinyLlama is a compact 1.1B parameter language model pretrained on 3 trillion tokens. This chat model is fine-tuned on a mix of publicly available instruction datasets.
+
+                      ## Key Features
+
+                      - **Compact Size**: 1.1B parameters, suitable for CPU-only deployment
+                      - **Efficient Training**: Trained on 3 trillion tokens using the same architecture and tokenizer as Llama 2
+                      - **Chat Optimized**: Fine-tuned specifically for conversational AI applications
+                      - **Low Resource Requirements**: Can run on CPU without GPU acceleration
+
+                      ## Model Details
+
+                      - **Architecture**: Based on Llama 2 architecture
+                      - **Parameters**: 1.1B
+                      - **Training Tokens**: 3 trillion
+                      - **Context Length**: 2048 tokens
+                      - **Vocabulary Size**: 32,000
+
+                      ## Usage
+
+                      ### With Transformers
+
+                      python
+                      from transformers import AutoTokenizer, AutoModelForCausalLM
+                      import torch
+
+                      model_id = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+                      tokenizer = AutoTokenizer.from_pretrained(model_id)
+                      model = AutoModelForCausalLM.from_pretrained(model_id)
+
+                      messages = [
+                          {"role": "system", "content": "You are a helpful assistant."},
+                          {"role": "user", "content": "What is machine learning?"}
+                      ]
+
+                      prompt = tokenizer.apply_chat_template(
+                          messages,
+                          tokenize=False,
+                          add_generation_prompt=True
+                      )
+
+                      inputs = tokenizer(prompt, return_tensors="pt")
+                      outputs = model.generate(**inputs, max_new_tokens=256)
+                      print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+
+
+                      ### With vLLM (CPU)
+
+                      TinyLlama works well with vLLM for high-throughput CPU inference:
+
+                      python
+                      from vllm import LLM, SamplingParams
+
+                      llm = LLM(model="TinyLlama/TinyLlama-1.1B-Chat-v1.0")
+                      sampling_params = SamplingParams(temperature=0.7, max_tokens=256)
+
+                      prompts = ["What is the capital of France?"]
+                      outputs = llm.generate(prompts, sampling_params)
+
+
+                      ## Chat Template
+
+                      TinyLlama uses the ChatML format:
+
+
+                      <|system|>
+                      You are a helpful assistant.</s>
+                      <|user|>
+                      Hello!</s>
+                      <|assistant|>
+
+
+                      ## Limitations
+
+                      - Smaller capacity compared to larger models (7B+)
+                      - May produce less nuanced responses for complex queries
+                      - Best suited for simple conversational tasks and quick inference
+                      - Context window limited to 2048 tokens
+
+                      ## Use Cases
+
+                      - Edge deployment and resource-constrained environments
+                      - CPU-only inference scenarios
+                      - Rapid prototyping and development
+                      - Educational and experimental purposes
+
+                      ## Training Data
+
+                      The model was fine-tuned on a combination of:
+                      - OpenAssistant Conversations Dataset (oasst1)
+                      - UltraChat dataset
+
+                      ## License
+
+                      Apache 2.0
+
+                      ## Citation
+
+                      bibtex
+                      @misc{zhang2024tinyllama,
+                        title={TinyLlama: An Open-Source Small Language Model},
+                        author={Peiyuan Zhang and Guangtao Zeng and Tianduo Wang and Wei Lu},
+                        year={2024},
+                        eprint={2401.02385},
+                        archivePrefix={arXiv},
+                        primaryClass={cs.CL}
+                      }
+
+                    provider: TinyLlama Team
+                    logo: https://t3.ftcdn.net/jpg/12/89/39/80/360_F_1289398029_cOe8JBVw4fRWK2pxGQAi0ihaS0fC4Qqi.jpg
+                    license: apache-2.0
+                    licenseLink: https://www.apache.org/licenses/LICENSE-2.0.txt
+                    libraryName: transformers
+                    artifacts:
+                      - uri: oci://quay.io/rh-aiservices-bu/tinyllama:1.0
+              EOF
+              echo "ConfigMap applied successfully"

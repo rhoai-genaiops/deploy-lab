@@ -4,34 +4,22 @@ kind: ServiceAccount
 metadata:
   name: model-catalog-cleanup-sa
   namespace: rhoai-model-registries
-  annotations:
-    "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-weight": "-10"
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: model-catalog-cleanup-role
   namespace: rhoai-model-registries
-  annotations:
-    "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-weight": "-10"
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 rules:
   - apiGroups: [""]
     resources: ["configmaps"]
-    verbs: ["get", "delete"]
+    verbs: ["get", "create", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: model-catalog-cleanup-rolebinding
   namespace: rhoai-model-registries
-  annotations:
-    "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-weight": "-10"
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 subjects:
   - kind: ServiceAccount
     name: model-catalog-cleanup-sa
