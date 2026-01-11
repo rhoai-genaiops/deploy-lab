@@ -72,7 +72,7 @@ def create_max_length_demo():
                 elem_id="chatbot",
                 height=400
             )
-            
+
             msg = gr.Textbox(
                 label="Message",
                 placeholder="Try asking: 'Write a very long and detailed story about a dragon' or 'Explain quantum physics in great detail'",
@@ -81,21 +81,21 @@ def create_max_length_demo():
                 elem_classes="contain",
                 autofocus=True
             )
-            
+
             submit_btn = gr.Button("Send", variant="primary", elem_classes="contain")
 
             def user(message, history):
-                return "", history + [{"role": "user", "content": message}]
+                return "", history + [[message, None]]
 
             def bot(history):
                 if not history:
                     return history
-                
-                last_message = history[-1]["content"]
-                history.append({"role": "assistant", "content": ""})
-                
+
+                last_message = history[-1][0]
+                history[-1][1] = ""
+
                 for chunk in chat_with_model_stream(last_message, max_tokens=2000):
-                    history[-1]["content"] = chunk
+                    history[-1][1] = chunk
                     yield history
 
             submit_event = msg.submit(user, [msg, chatbot], [msg, chatbot]).then(

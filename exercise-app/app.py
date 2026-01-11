@@ -19,14 +19,6 @@ TOKENIZER_URL = "https://agents-course-the-tokenizer-playground.static.hf.space"
 # Define exercises
 EXERCISES = [
     {
-        "id": "tokenizer",
-        "title": "Tokenizer Playground",
-        "description": "Explore how LLMs break text into tokens",
-        "icon": "puzzle-piece",
-        "url": TOKENIZER_URL,
-        "external": True,
-    },
-    {
         "id": "chat",
         "title": "Chat Interface",
         "description": "Test LLM conversations and responses",
@@ -35,12 +27,20 @@ EXERCISES = [
         "external": False,
     },
     {
-        "id": "prompt",
-        "title": "Prompt Playground",
-        "description": "Experiment with different prompting techniques",
-        "icon": "terminal",
-        "path": "/prompt-playground",
-        "external": False,
+        "id": "tokenizer",
+        "title": "Tokenizer Playground",
+        "description": "Explore how LLMs break text into tokens",
+        "icon": "puzzle-piece",
+        "url": TOKENIZER_URL,
+        "external": True,
+    },
+    {
+        "id": "guardrails",
+        "title": "Guardrails",
+        "description": "Learn about LLM safety and content moderation",
+        "icon": "shield-halved",
+        "url": "https://red.ht/lemonade-stand",
+        "external": True,
     },
     {
         "id": "context",
@@ -67,12 +67,12 @@ EXERCISES = [
         "external": False,
     },
     {
-        "id": "guardrails",
-        "title": "Guardrails",
-        "description": "Learn about LLM safety and content moderation",
-        "icon": "shield-halved",
-        "url": "https://red.ht/lemonade-stand",
-        "external": True,
+        "id": "prompt",
+        "title": "Prompt Playground",
+        "description": "Experiment with different prompting techniques",
+        "icon": "terminal",
+        "path": "/prompt-playground",
+        "external": False,
     },
 ]
 
