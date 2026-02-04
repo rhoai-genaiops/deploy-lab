@@ -2,12 +2,12 @@
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: gradio-app
+  name: ai-orientation-app
 spec:
   path: /
   to:
     kind: Service
-    name: gradio-app
+    name: ai-orientation-app
     weight: 100
   port:
     targetPort: http
