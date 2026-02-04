@@ -2,22 +2,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gradio-app
+  name: ai-orientation-app
   labels:
-    app: gradio-app
+    app: ai-orientation-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: gradio-app
+      app: ai-orientation-app
   template:
     metadata:
       labels:
-        app: gradio-app
+        app: ai-orientation-app
     spec:
       containers:
-      - name: gradio-app
-        image: quay.io/rhoai-genaiops/gradio-app:0.0.4
+      - name: ai-orientation-app
+        image: quay.io/rhoai-genaiops/ai-orientation-app:0.0.1
         imagePullPolicy: Always
         env:
         - name: MODEL_URL
@@ -33,14 +33,14 @@ spec:
         - name: COMPRESSED_MODEL_NAME
           value: "{{ .Values.compressedModelName | default "llama32-fp8" }}"
         ports:
-        - containerPort: 7860
+        - containerPort: 8000
           name: http
           protocol: TCP
         resources:
           requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
             memory: "256Mi"
             cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
       restartPolicy: Always

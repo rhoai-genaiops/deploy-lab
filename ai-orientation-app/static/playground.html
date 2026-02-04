@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Prompt Engineering Lab</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --accent: #dbeafe;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #111827;
+                --card-bg: #1f2937;
+                --text: #f9fafb;
+                --text-light: #9ca3af;
+                --border: #374151;
+                --accent: #1e3a5f;
+            }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+        header {
+            padding: 1rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        header h1 { font-size: 1.25rem; font-weight: 600; }
+        .layout {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        body.embed .layout {
+            max-width: 100%;
+        }
+        @media (max-width: 768px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+        .form-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+        .form-group input,
+        .form-group textarea {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 480px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+        .btn-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .submit-btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .submit-btn:hover { background: var(--primary-dark); }
+        .submit-btn:disabled { background: var(--border); cursor: not-allowed; }
+        .clear-btn {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            background: var(--card-bg);
+            color: var(--text-light);
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .clear-btn:hover { background: var(--border); }
+        .response-box {
+            padding: 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            min-height: 150px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+        .response-box.streaming::after {
+            content: '▊';
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* History panel */
+        .history-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .history-empty {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-light);
+        }
+        .history-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .history-item-num {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .history-item-time {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+        .history-section {
+            margin-bottom: 0.75rem;
+        }
+        .history-section:last-child {
+            margin-bottom: 0;
+        }
+        .history-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+        .history-content {
+            font-size: 0.875rem;
+            line-height: 1.4;
+            padding: 0.5rem;
+            background: var(--bg);
+            border-radius: 0.375rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .history-content.response {
+            background: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <script>if(new URLSearchParams(location.search).has('embed'))document.body.classList.add('embed');</script>
+    <header><h1>Prompt Engineering Lab</h1></header>
+    <div class="layout">
+        <!-- Left panel: Input form -->
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title">Configuration</span>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Model Name</label>
+                    <input type="text" id="model-name" placeholder="llama32">
+                </div>
+                <div class="form-group">
+                    <label>Model URL</label>
+                    <input type="text" id="model-url" placeholder="http://localhost:8080">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>System Prompt</label>
+                <textarea id="system" placeholder="You are a helpful assistant."></textarea>
+            </div>
+            <div class="form-group">
+                <label>User Prompt</label>
+                <textarea id="user" placeholder="Enter your message..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Temperature: <span id="temp-value">0.7</span></label>
+                    <input type="range" id="temp" min="0" max="1" step="0.1" value="0.7">
+                </div>
+                <div class="form-group">
+                    <label>Max Tokens: <span id="tokens-value">512</span></label>
+                    <input type="range" id="tokens" min="50" max="2048" step="50" value="512">
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="submit-btn" id="submit">Send</button>
+                <button class="clear-btn" id="clear-history">Clear History</button>
+            </div>
+            <div class="form-group">
+                <label>Response</label>
+                <div class="response-box" id="response">Response will appear here...</div>
+            </div>
+        </div>
+
+        <!-- Right panel: History -->
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title">History</span>
+                <span id="history-count" style="font-size: 0.875rem; color: var(--text-light);">0 entries</span>
+            </div>
+            <div class="history-panel" id="history">
+                <div class="history-empty">No history yet. Send a prompt to get started.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const submit = document.getElementById('submit');
+        const response = document.getElementById('response');
+        const historyEl = document.getElementById('history');
+        const historyCount = document.getElementById('history-count');
+        const clearHistory = document.getElementById('clear-history');
+
+        let history = [];
+
+        document.getElementById('temp').addEventListener('input', (e) => {
+            document.getElementById('temp-value').textContent = e.target.value;
+        });
+        document.getElementById('tokens').addEventListener('input', (e) => {
+            document.getElementById('tokens-value').textContent = e.target.value;
+        });
+
+        // Load config
+        fetch('/config').then(r => r.json()).then(config => {
+            document.getElementById('model-name').placeholder = config.default_model_name;
+            document.getElementById('model-url').placeholder = config.default_model_url;
+        }).catch(() => {});
+
+        function renderHistory() {
+            if (history.length === 0) {
+                historyEl.innerHTML = '<div class="history-empty">No history yet. Send a prompt to get started.</div>';
+                historyCount.textContent = '0 entries';
+                return;
+            }
+
+            historyCount.textContent = `${history.length} ${history.length === 1 ? 'entry' : 'entries'}`;
+            historyEl.innerHTML = history.map((item, i) => `
+                <div class="history-item">
+                    <div class="history-item-header">
+                        <span class="history-item-num">#${i + 1}</span>
+                        <span class="history-item-time">${item.time}</span>
+                    </div>
+                    <div class="history-section">
+                        <div class="history-label">System Prompt</div>
+                        <div class="history-content">${escapeHtml(item.system || '(default)')}</div>
+                    </div>
+                    <div class="history-section">
+                        <div class="history-label">User Prompt</div>
+                        <div class="history-content">${escapeHtml(item.user)}</div>
+                    </div>
+                    <div class="history-section">
+                        <div class="history-label">Response</div>
+                        <div class="history-content response">${escapeHtml(item.response)}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Scroll to bottom of history
+            historyEl.scrollTop = historyEl.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        clearHistory.addEventListener('click', () => {
+            history = [];
+            renderHistory();
+        });
+
+        submit.addEventListener('click', async () => {
+            const userPrompt = document.getElementById('user').value.trim();
+            if (!userPrompt) return;
+
+            const systemPrompt = document.getElementById('system').value;
+
+            submit.disabled = true;
+            response.textContent = '';
+            response.classList.add('streaming');
+
+            let content = '';
+
+            try {
+                const res = await fetch('/api/chat/playground', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_prompt: userPrompt,
+                        system_prompt: systemPrompt || undefined,
+                        model_name: document.getElementById('model-name').value || undefined,
+                        model_url: document.getElementById('model-url').value || undefined,
+                        temperature: parseFloat(document.getElementById('temp').value),
+                        max_tokens: parseInt(document.getElementById('tokens').value),
+                        stream: true
+                    })
+                });
+
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    for (const line of decoder.decode(value).split('\n')) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+                            try {
+                                const json = JSON.parse(data);
+                                if (json.content) {
+                                    content += json.content;
+                                    response.textContent = content;
+                                }
+                                if (json.error) {
+                                    content = json.error;
+                                    response.textContent = content;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+            } catch (error) {
+                content = 'Failed to connect to server';
+                response.textContent = content;
+            }
+
+            response.classList.remove('streaming');
+            submit.disabled = false;
+
+            // Add to history
+            history.push({
+                system: systemPrompt,
+                user: userPrompt,
+                response: content,
+                time: new Date().toLocaleTimeString()
+            });
+            renderHistory();
+        });
+    </script>
+</body>
+</html>

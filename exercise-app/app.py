@@ -12,18 +12,18 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Setup templates
 templates = Jinja2Templates(directory="templates")
 
-# Get gradio app URL from environment variable
-GRADIO_APP_URL = os.getenv("GRADIO_APP_URL", "http://localhost:7860")
+# Get AI orientation app URL from environment variable
+AI_ORIENTATION_APP_URL = os.getenv("AI_ORIENTATION_APP_URL", "http://localhost:8000")
 TOKENIZER_URL = "https://agents-course-the-tokenizer-playground.static.hf.space"
 
 # Define exercises
 EXERCISES = [
     {
         "id": "chat",
-        "title": "Chat Interface",
+        "title": "Chat with the Model",
         "description": "Test LLM conversations and responses",
         "icon": "comments",
-        "path": "/chat-interface",
+        "path": "/chat",
         "external": False,
     },
     {
@@ -44,34 +44,34 @@ EXERCISES = [
     },
     {
         "id": "context",
-        "title": "Context Demo",
-        "description": "Understand context windows and token limits",
+        "title": "Max Tokens Demo",
+        "description": "Control how many tokens the model generates",
         "icon": "window-maximize",
-        "path": "/context-demo",
+        "path": "/context",
         "external": False,
     },
     {
         "id": "maxlength",
-        "title": "Max Length Demo",
-        "description": "See how token limits affect model responses",
+        "title": "Context Window Demo",
+        "description": "See what happens when you hit the model's capacity limit",
         "icon": "ruler-horizontal",
-        "path": "/max-length-demo",
+        "path": "/max-length",
         "external": False,
     },
     {
-        "id": "optimization",
-        "title": "Optimization",
-        "description": "Explore model optimization techniques",
+        "id": "compare",
+        "title": "Side-by-Side Model Comparison",
+        "description": "Compare different models and optimization techniques",
         "icon": "bolt",
-        "path": "/optimization",
+        "path": "/compare",
         "external": False,
     },
     {
         "id": "prompt",
-        "title": "Prompt Playground",
+        "title": "Prompt Engineering Lab",
         "description": "Experiment with different prompting techniques",
         "icon": "terminal",
-        "path": "/prompt-playground",
+        "path": "/playground",
         "external": False,
     },
 ]
@@ -84,7 +84,7 @@ async def home(request: Request):
     for ex in EXERCISES:
         exercise = ex.copy()
         if not exercise.get("external"):
-            exercise["url"] = f"{GRADIO_APP_URL}{exercise['path']}"
+            exercise["url"] = f"{AI_ORIENTATION_APP_URL}{exercise['path']}"
         exercises.append(exercise)
 
     return templates.TemplateResponse(

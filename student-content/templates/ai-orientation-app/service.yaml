@@ -2,15 +2,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: gradio-app
+  name: ai-orientation-app
   labels:
-    app: gradio-app
+    app: ai-orientation-app
 spec:
   type: ClusterIP
   ports:
-  - port: 7860
-    targetPort: 7860
+  - port: 8000
+    targetPort: 8000
     protocol: TCP
     name: http
   selector:
-    app: gradio-app
+    app: ai-orientation-app
