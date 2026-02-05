@@ -44,7 +44,7 @@ export default function LeaderboardView() {
           <Trophy className="w-10 h-10 text-yellow-500" />
         </div>
         <p className="text-gray-600 dark:text-gray-400">
-          Track the top performers earning llama-coins! 🦙
+          Track the top performers earning CAI-coins! 🦙
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export default function LeaderboardView() {
 
           <div className="card text-center">
             <div className="flex items-center justify-center space-x-2 mb-2">
-              <img src="/assets/llama-coin.png" className="w-5 h-5" alt="coin" />
+              <img src="/assets/CAI-coin.png" className="w-5 h-5" alt="coin" />
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Top Score</span>
             </div>
             <p className="text-3xl font-bold text-llama-gold">
