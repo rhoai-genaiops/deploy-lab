@@ -1,0 +1,169 @@
+---
+# Calendar API PVC
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: calendar-api-pvc
+  namespace: ai501
+  labels:
+    app: calendar-api
+    component: mcp-auth
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+---
+# Calendar API Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calendar-api
+  namespace: ai501
+  labels:
+    app: calendar-api
+    component: mcp-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: calendar-api
+  template:
+    metadata:
+      labels:
+        app: calendar-api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: calendar-api
+        image: quay.io/rhoai-genaiops/calendar-api:v2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: DATABASE_PATH
+          value: "/app/data/CalendarDB.db"
+        - name: SQLITE_TMPDIR
+          value: "/tmp"
+        - name: TMPDIR
+          value: "/tmp"
+        - name: UNIVERSITY_NAME
+          value: "Redwood Digital University"
+        - name: SYSTEM_BRANDING
+          value: "Powered by CanopyAI"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: calendar-data
+          mountPath: /app/data
+        - name: tmp
+          mountPath: /tmp
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: calendar-data
+        persistentVolumeClaim:
+          claimName: calendar-api-pvc
+      - name: tmp
+        emptyDir: {}
+---
+# Calendar API Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: calendar-api
+  namespace: ai501
+  labels:
+    app: calendar-api
+    component: mcp-auth
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: http
+  selector:
+    app: calendar-api
+---
+# Calendar API Init Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: calendar-api-init
+  namespace: ai501
+  labels:
+    app: calendar-api
+    component: mcp-auth
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-1"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        app: calendar-api-init
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: db-init
+        image: quay.io/rhoai-genaiops/calendar-api:v2
+        imagePullPolicy: IfNotPresent
+        command:
+        - python
+        - test_data.py
+        env:
+        - name: DATABASE_PATH
+          value: "/app/data/CalendarDB.db"
+        - name: SQLITE_TMPDIR
+          value: "/tmp"
+        - name: TMPDIR
+          value: "/tmp"
+        - name: UNIVERSITY_NAME
+          value: "Redwood Digital University"
+        volumeMounts:
+        - name: calendar-data
+          mountPath: /app/data
+        - name: tmp
+          mountPath: /tmp
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: calendar-data
+        persistentVolumeClaim:
+          claimName: calendar-api-pvc
+      - name: tmp
+        emptyDir: {}

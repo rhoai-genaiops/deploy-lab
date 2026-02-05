@@ -1,0 +1,198 @@
+{{- $cluster_domain := .Values.cluster_domain }}
+{{- $attendees := (add1 .Values.attendees | int) }}
+---
+# MCP Calendar Keycloak Realm Import
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: KeycloakRealmImport
+metadata:
+  name: mcp-calendar-realm
+  namespace: keycloak
+  labels:
+    app: mcp-calendar
+    component: oauth
+spec:
+  # Reference to the Keycloak instance
+  keycloakCRName: keycloak
+
+  # Secrets for sensitive values
+  placeholders:
+    OAUTH_CLIENT_SECRET:
+      secret:
+        name: mcp-oauth-secret
+        key: client-secret
+    # Password placeholder for all users (shared password for lab simplicity)
+    USER_PASSWORD:
+      secret:
+        name: mcp-user-password-secret
+        key: password
+
+  realm:
+    # Realm identity
+    id: mcp-calendar
+    realm: mcp-calendar
+    enabled: true
+    displayName: "MCP Calendar OAuth Realm"
+
+    # Security settings
+    sslRequired: external
+    registrationAllowed: false
+    loginWithEmailAllowed: true
+    duplicateEmailsAllowed: false
+    resetPasswordAllowed: true
+    editUsernameAllowed: false
+    bruteForceProtected: true
+
+    # Token settings - CRITICAL: 10 minute token lifespan (from working config)
+    accessTokenLifespan: 600  # 10 minutes
+    accessTokenLifespanForImplicitFlow: 900  # 15 minutes
+    ssoSessionIdleTimeout: 1800  # 30 minutes
+    ssoSessionMaxLifespan: 36000  # 10 hours
+    offlineSessionIdleTimeout: 2592000  # 30 days
+    accessCodeLifespan: 60  # 1 minute
+    accessCodeLifespanUserAction: 300  # 5 minutes
+    accessCodeLifespanLogin: 1800  # 30 minutes
+
+    # Client Scopes - MCP tools scope with audience mapper
+    clientScopes:
+      - name: mcp:tools
+        description: "MCP tools access scope for Calendar Server"
+        protocol: openid-connect
+        attributes:
+          include.in.token.scope: "true"
+          display.on.consent.screen: "true"
+          include.in.openid.provider.metadata: "true"
+        protocolMappers:
+          - name: mcp-server-audience
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: "false"
+              lightweight.claim: "false"
+              access.token.claim: "true"
+              introspection.token.claim: "true"
+              userinfo.token.claim: "false"
+              # MCP server audience - embedded in token for validation
+              included.custom.audience: "https://mcp-server-mcp-calendar.{{ $cluster_domain }}"
+
+    # OAuth Clients
+    clients:
+      - clientId: mcp-client
+        name: mcp-client
+        description: "OAuth client for MCP Calendar Server"
+        enabled: true
+
+        # Client authentication (confidential client with secret)
+        publicClient: false
+        clientAuthenticatorType: client-secret
+        secret: ${OAUTH_CLIENT_SECRET}
+
+        # OAuth flows
+        standardFlowEnabled: true
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: true
+        serviceAccountsEnabled: false
+
+        # Access settings
+        bearerOnly: false
+        consentRequired: false
+        fullScopeAllowed: true
+        frontchannelLogout: true
+        protocol: openid-connect
+
+        # Redirect URIs for OAuth callback
+        redirectUris:
+          - "https://mcp-server-mcp-calendar.{{ $cluster_domain }}/callback"
+          - "https://mcp-server-mcp-calendar.{{ $cluster_domain }}/*"
+          - "/*"
+
+        # Web origins
+        webOrigins:
+          - "/*"
+
+        # Protocol mappers - audience mapper for MCP server
+        protocolMappers:
+          - name: mcp-server-audience
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              id.token.claim: "false"
+              access.token.claim: "true"
+              # MCP server audience - embedded in token for validation
+              included.custom.audience: "https://mcp-server-mcp-calendar.{{ $cluster_domain }}"
+
+        # Default client scopes (including mcp:tools)
+        defaultClientScopes:
+          - web-origins
+          - acr
+          - profile
+          - roles
+          - mcp:tools
+          - basic
+          - email
+
+        # Optional client scopes
+        optionalClientScopes:
+          - address
+          - phone
+          - organization
+          - offline_access
+          - microprofile-jwt
+
+        # Additional OAuth attributes
+        attributes:
+          oidc.ciba.grant.enabled: "false"
+          backchannel.logout.session.required: "true"
+          standard.token.exchange.enabled: "false"
+          oauth2.device.authorization.grant.enabled: "false"
+          backchannel.logout.revoke.offline.tokens: "false"
+          dpop.bound.access.tokens: "false"
+
+    # Users - Generated userX users based on attendees count
+    users:
+      # Legacy testuser for backward compatibility
+      - username: testuser
+        firstName: Test
+        lastName: User
+        email: testuser@example.com
+        emailVerified: true
+        enabled: true
+        realmRoles:
+          - user
+          - mcp-user
+        credentials:
+          - type: password
+            value: ${USER_PASSWORD}
+            temporary: false
+      # Generated userX users (user1, user2, ... userN)
+      {{- range $attendee := untilStep 1 $attendees 1 }}
+      - username: user{{ $attendee }}
+        firstName: User
+        lastName: "{{ $attendee }}"
+        email: user{{ $attendee }}@example.com
+        emailVerified: true
+        enabled: true
+        realmRoles:
+          - user
+          - mcp-user
+        credentials:
+          - type: password
+            value: ${USER_PASSWORD}
+            temporary: false
+      {{- end }}
+
+    # Realm roles
+    roles:
+      realm:
+        - name: user
+          description: "Standard user role"
+        - name: mcp-user
+          description: "MCP Calendar user with tool access"
+
+    # Events configuration (audit logging)
+    eventsEnabled: true
+    eventsListeners:
+      - jboss-logging
+    adminEventsEnabled: true
+    adminEventsDetailsEnabled: true

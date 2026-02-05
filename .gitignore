@@ -1,2 +1,5 @@
 *.DS_Store
 *.gradio
+.claude
+.playwright-mcp
+.serena

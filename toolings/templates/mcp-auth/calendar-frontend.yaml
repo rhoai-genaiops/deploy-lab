@@ -1,0 +1,188 @@
+---
+# Calendar Frontend ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: calendar-frontend-config
+  namespace: ai501
+  labels:
+    app: calendar-frontend
+    component: mcp-auth
+data:
+  REACT_APP_UNIVERSITY_NAME: "Redwood Digital University"
+  REACT_APP_SYSTEM_BRANDING: "Powered by CanopyAI"
+---
+# Calendar Frontend Nginx ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: calendar-frontend-nginx
+  namespace: ai501
+  labels:
+    app: calendar-frontend
+    component: mcp-auth
+data:
+  nginx.conf: |
+    # Nginx configuration for non-root user
+    worker_processes auto;
+    error_log /dev/stderr warn;
+    pid /tmp/nginx.pid;
+
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+
+        # Temp paths accessible by non-root user
+        client_body_temp_path /tmp/nginx_client_temp;
+        proxy_temp_path /tmp/nginx_proxy_temp;
+        fastcgi_temp_path /tmp/nginx_fastcgi_temp;
+        uwsgi_temp_path /tmp/nginx_uwsgi_temp;
+        scgi_temp_path /tmp/nginx_scgi_temp;
+
+        sendfile on;
+        keepalive_timeout 65;
+
+        server {
+            listen 8080;
+            server_name localhost;
+            root /usr/share/nginx/html;
+            index index.html;
+
+            # Proxy API requests to backend service
+            location /api/ {
+                # Remove /api prefix and proxy to backend
+                rewrite ^/api/(.*)$ /$1 break;
+                proxy_pass http://calendar-api:8000;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # React Router support
+            location / {
+                try_files $uri $uri/ /index.html;
+            }
+        }
+    }
+---
+# Calendar Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calendar-frontend
+  namespace: ai501
+  labels:
+    app: calendar-frontend
+    component: mcp-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: calendar-frontend
+  template:
+    metadata:
+      labels:
+        app: calendar-frontend
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: calendar-frontend
+        image: quay.io/rhoai-genaiops/calendar-frontend:v2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+        envFrom:
+        - configMapRef:
+            name: calendar-frontend-config
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
+        - name: nginx-run
+          mountPath: /var/run
+        - name: nginx-tmp
+          mountPath: /tmp
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+      volumes:
+      - name: nginx-cache
+        emptyDir: {}
+      - name: nginx-run
+        emptyDir: {}
+      - name: nginx-tmp
+        emptyDir: {}
+      - name: nginx-config
+        configMap:
+          name: calendar-frontend-nginx
+---
+# Calendar Frontend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: calendar-frontend
+  namespace: ai501
+  labels:
+    app: calendar-frontend
+    component: mcp-auth
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    app: calendar-frontend
+---
+# Calendar Frontend Route
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: calendar-frontend
+  namespace: ai501
+  labels:
+    app: calendar-frontend
+    component: mcp-auth
+spec:
+  to:
+    kind: Service
+    name: calendar-frontend
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

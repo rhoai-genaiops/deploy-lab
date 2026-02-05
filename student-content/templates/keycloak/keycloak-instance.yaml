@@ -1,0 +1,36 @@
+---
+# Keycloak Instance
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak
+  namespace: keycloak
+  labels:
+    app: keycloak
+    component: auth
+spec:
+  instances: 1
+  additionalOptions:
+    - name: enable-recovery
+      value: 'true'
+  db:
+    vendor: postgres
+    host: keycloak-pgsql
+    database: keycloak
+    usernameSecret:
+      name: keycloak-pgsql-user
+      key: user
+    passwordSecret:
+      name: keycloak-pgsql-user
+      key: password
+  hostname:
+    hostname: sso.{{ .Values.cluster_domain }}
+    strict: false
+    strictBackchannel: false
+  http:
+    httpEnabled: true
+    tlsSecret: keycloak-tls
+  ingress:
+    enabled: true
+  transaction:
+    xaEnabled: true
