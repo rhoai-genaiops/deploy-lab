@@ -4,26 +4,27 @@ kind: Namespace
 metadata:
   annotations:
     openshift.io/description: "SSO project"
-    openshift.io/display-name: "Red Hat SSO"
-  name: sso
+    openshift.io/display-name: "Red Hat Build of Keycloak"
+  name: keycloak
 ---
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
   annotations:
-  name: sso
-  namespace: sso
+  name: keycloak
+  namespace: keycloak
 spec:
   targetNamespaces:
-    - sso
+    - keycloak
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: rhsso-operator
+  name: rhbk-operator
   namespace: sso
 spec:
-  channel: stable
-  name: rhsso-operator
+  channel: stable-v26.2
+  installPlanApproval: Automatic
+  name: rhbk-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
