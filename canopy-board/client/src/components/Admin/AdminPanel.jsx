@@ -22,7 +22,7 @@ export default function AdminPanel() {
         <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
           Admin Control Panel
         </h1>
-        <p className="text-gray-600 mt-2">Manage teams, users, and award llama-coins</p>
+        <p className="text-gray-600 mt-2">Manage teams, users, and award CAI-coins</p>
       </div>
 
       {/* Tabs */}

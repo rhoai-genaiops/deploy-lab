@@ -53,7 +53,7 @@ export default function AdminStats() {
                 {data.total_coins_awarded.toLocaleString()}
               </p>
             </div>
-            <img src="/assets/llama-coin.png" className="w-12 h-12" alt="coin" />
+            <img src="/assets/CAI-coin.png" className="w-12 h-12" alt="coin" />
           </div>
         </div>
       </div>
@@ -88,7 +88,7 @@ export default function AdminStats() {
                     {transaction.amount > 0 ? '+' : ''}
                     {transaction.amount}
                   </span>
-                  <img src="/assets/llama-coin.png" className="w-5 h-5" alt="coin" />
+                  <img src="/assets/CAI-coin.png" className="w-5 h-5" alt="coin" />
                 </div>
                 <span className="text-xs text-gray-500">{transaction.team_name}</span>
               </div>

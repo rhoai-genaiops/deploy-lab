@@ -1,7 +1,7 @@
 {
   "name": "canopy-credits-board",
   "version": "1.0.0",
-  "description": "Canopy Credits Board - A fun, interactive dashboard for tracking team efforts with llama-coins",
+  "description": "Canopy Credits Board - A fun, interactive dashboard for tracking team efforts with CAI-coins",
   "private": true,
   "workspaces": [
     "server",

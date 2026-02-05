@@ -14,7 +14,7 @@ RUN cd server && npm install --omit=dev && \
 # Copy source code
 COPY server ./server
 COPY client ./client
-COPY llama-coin.png ./client/public/assets/
+COPY CAI-coin.png ./client/public/assets/
 
 # Build frontend
 RUN cd client && npm run build

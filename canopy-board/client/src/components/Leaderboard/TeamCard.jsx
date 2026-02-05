@@ -71,7 +71,7 @@ export default function TeamCard({ team, rank }) {
         <div className="text-right">
           <div className="flex items-center space-x-2">
             <img
-              src="/assets/llama-coin.png"
+              src="/assets/CAI-coin.png"
               alt="coin"
               className="w-8 h-8 animate-wiggle"
             />
@@ -84,7 +84,7 @@ export default function TeamCard({ team, rank }) {
               {team.total_coins.toLocaleString()}
             </motion.span>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">llama-coins</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">CAI-coins</p>
         </div>
 
         {/* Trend Button */}

@@ -16,7 +16,7 @@ export default function Header() {
           {/* Logo and Title */}
           <Link to="/" className="flex items-center space-x-3 group">
             <img
-              src="/assets/llama-coin.png"
+              src="/assets/CAI-coin.png"
               alt="Llama Coin"
               className="w-12 h-12 transition-transform group-hover:scale-110 group-hover:rotate-12"
             />
@@ -24,7 +24,7 @@ export default function Header() {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 RDU Leaderboard
               </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Track the top contributors earning llama-coins! 🦙</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Track the top contributors earning CAI-coins! 🦙</p>
             </div>
           </Link>
 
