@@ -1,0 +1,153 @@
+---
+# MCP Server Auth ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-server-auth-config
+  namespace: ai501
+  labels:
+    app: mcp-server-auth
+    component: mcp-auth
+data:
+  # Calendar API connection
+  CALENDAR_API_BASE_URL: "http://calendar-api:8000"
+  UNIVERSITY_NAME: "Redwood Digital University"
+  SYSTEM_BRANDING: "Powered by CanopyAI"
+  LOG_LEVEL: "INFO"
+  # MCP Transport settings
+  MCP_TRANSPORT: "sse"
+  MCP_PORT: "8080"
+  MCP_HOST: "0.0.0.0"
+  # OAuth settings - Keycloak (internal service URLs for in-cluster communication)
+  OAUTH_ISSUER_URL: "http://keycloak-service.keycloak.svc:8080/realms/mcp-calendar"
+  OAUTH_INTROSPECTION_URL: "http://keycloak-service.keycloak.svc:8080/realms/mcp-calendar/protocol/openid-connect/token/introspect"
+  OAUTH_CLIENT_ID: "mcp-client"
+  MCP_SCOPE: "mcp:tools"
+  # Server URL for audience validation (must match token's audience claim)
+  SERVER_URL: "https://mcp-server-mcp-calendar.{{ .Values.cluster_domain }}"
+---
+# MCP Server Auth Secret for OAuth credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mcp-server-auth-secret
+  namespace: ai501
+  labels:
+    app: mcp-server-auth
+    component: mcp-auth
+type: Opaque
+stringData:
+  # Client secret for token introspection
+  OAUTH_CLIENT_SECRET: "zrqR06T0NBTct1ZP08SK8NAc8JfVRW0n"
+---
+# MCP Server Auth Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-server-auth
+  namespace: ai501
+  labels:
+    app: mcp-server-auth
+    component: mcp-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-server-auth
+  template:
+    metadata:
+      labels:
+        app: mcp-server-auth
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: mcp-server
+        image: quay.io/rhoai-genaiops/calendar-mcp-server-auth:v2-auth
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+        envFrom:
+        - configMapRef:
+            name: mcp-server-auth-config
+        - secretRef:
+            name: mcp-server-auth-secret
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import sys; sys.exit(0)"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import sys; sys.exit(0)"
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+---
+# MCP Server Auth Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-server-auth
+  namespace: ai501
+  labels:
+    app: mcp-server-auth
+    component: mcp-auth
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    app: mcp-server-auth
+---
+# MCP Server Auth Route (for external OAuth access)
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: mcp-server-auth
+  namespace: ai501
+  labels:
+    app: mcp-server-auth
+    component: mcp-auth
+  annotations:
+    description: "MCP Server with OAuth authentication"
+spec:
+  host: mcp-server-mcp-calendar.{{ .Values.cluster_domain }}
+  to:
+    kind: Service
+    name: mcp-server-auth
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

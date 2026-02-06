@@ -1,0 +1,18 @@
+---
+# PostgreSQL Service for Keycloak
+kind: Service
+apiVersion: v1
+metadata:
+  name: keycloak-pgsql
+  namespace: keycloak
+  labels:
+    app: keycloak-pgsql
+    component: database
+spec:
+  ports:
+    - name: data
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: keycloak-pgsql
