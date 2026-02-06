@@ -17,11 +17,11 @@ spec:
     spec:
       containers:
       - name: exercise-app
-        image: quay.io/rhoai-genaiops/exercise-app:0.0.2
+        image: quay.io/rhoai-genaiops/exercise-app:0.0.3
         imagePullPolicy: Always
         env:
-        - name: GRADIO_APP_URL
-          value: https://gradio-app-ai501.{{ .Values.cluster_domain }}
+        - name: AI_ORIENTATION_APP_URL
+          value: https://ai-orientation-app-ai501.{{ .Values.cluster_domain }}
         ports:
         - containerPort: 8080
           name: http

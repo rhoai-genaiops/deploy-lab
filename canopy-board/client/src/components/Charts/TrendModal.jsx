@@ -52,11 +52,11 @@ export default function TrendModal({ isOpen, onClose, entity, type }) {
             {payload[0].payload.date}
           </p>
           <p className="text-sm text-blue-600 dark:text-blue-400">
-            Daily: {payload[0].value} llama-coins
+            Daily: {payload[0].value} CAI-coins
           </p>
           {payload[1] && (
             <p className="text-sm text-green-600 dark:text-green-400">
-              Total: {payload[1].value} llama-coins
+              Total: {payload[1].value} CAI-coins
             </p>
           )}
         </div>
@@ -123,7 +123,7 @@ export default function TrendModal({ isOpen, onClose, entity, type }) {
                       {entity.total_coins?.toLocaleString() || 0}
                     </p>
                     <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                      llama-coins
+                      CAI-coins
                     </p>
                   </div>
 

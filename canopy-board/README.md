@@ -1,6 +1,6 @@
 # Canopy Credits Board 🦙
 
-A fun, interactive Kubernetes-native dashboard for tracking team efforts with llama-coins!
+A fun, interactive dashboard for tracking team efforts with CAI-coins! Go CAI!
 
 ## Configuration
 
@@ -19,7 +19,7 @@ A fun, interactive Kubernetes-native dashboard for tracking team efforts with ll
 1. **Login**: Navigate to `/admin` and enter admin password
 2. **Create Teams**: Add teams with names, descriptions, and colors
 3. **Add Users**: Create users and assign them to teams
-4. **Award Coins**: Give llama-coins to users with reasons
+4. **Award Coins**: Give CAI-coins to users with reasons
 5. **View Stats**: Monitor activity and recent transactions
 
 ### Public View

@@ -1,0 +1,46 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-orientation-app
+  labels:
+    app: ai-orientation-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-orientation-app
+  template:
+    metadata:
+      labels:
+        app: ai-orientation-app
+    spec:
+      containers:
+      - name: ai-orientation-app
+        image: quay.io/rhoai-genaiops/ai-orientation-app:0.0.1
+        imagePullPolicy: Always
+        env:
+        - name: MODEL_URL
+          value: https://llama32-ai501.{{ .Values.cluster_domain }}
+        - name: MODEL_NAME
+          value: "{{ .Values.modelName | default "llama32" }}"
+        - name: TINY_URL
+          value: https://tinyllama-ai501.{{ .Values.cluster_domain }}
+        - name: TINY_MODEL_NAME
+          value: "{{ .Values.tinyModelName | default "tinyllama" }}"
+        - name: COMPRESSED_MODEL_URL
+          value: https://llama32-fp8-ai501.{{ .Values.cluster_domain }}
+        - name: COMPRESSED_MODEL_NAME
+          value: "{{ .Values.compressedModelName | default "llama32-fp8" }}"
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+      restartPolicy: Always

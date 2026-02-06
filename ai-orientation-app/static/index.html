@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>AI Chat</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #111827;
+                --card-bg: #1f2937;
+                --text: #f9fafb;
+                --text-light: #9ca3af;
+                --border: #374151;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        .app {
+            max-width: 800px;
+            margin: 0 auto;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            gap: 0.25rem;
+            padding: 0.75rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        nav button {
+            flex-shrink: 0;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 2rem;
+            background: transparent;
+            color: var(--text-light);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        nav button.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        nav button:hover:not(.active) {
+            background: var(--border);
+        }
+
+        /* Main content */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .view {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .view.active {
+            display: flex;
+        }
+
+        /* Chat view */
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 0.875rem 1rem;
+            border-radius: 1rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .message.error {
+            background: var(--error);
+            color: white;
+        }
+
+        .message.streaming::after {
+            content: '▊';
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Input area */
+        .input-area {
+            padding: 1rem;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: none;
+            min-height: 48px;
+            max-height: 120px;
+        }
+
+        .input-area textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+
+        .send-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .send-btn:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+        }
+
+        /* Settings panel */
+        .settings {
+            padding: 0.75rem 1rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .settings-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .setting {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .setting label {
+            color: var(--text-light);
+        }
+
+        .setting input[type="range"] {
+            width: 80px;
+        }
+
+        .setting input[type="text"] {
+            padding: 0.375rem 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.875rem;
+            width: 120px;
+        }
+
+        .setting-value {
+            min-width: 2rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* Playground view */
+        .playground-form {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 480px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .submit-btn {
+            padding: 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .submit-btn:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+        }
+
+        .response-box {
+            padding: 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            min-height: 150px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        /* Compare view */
+        .compare-results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .compare-results {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .model-result {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+
+        .model-name {
+            font-weight: 600;
+        }
+
+        .model-time {
+            color: var(--text-light);
+        }
+
+        .model-response {
+            flex: 1;
+            padding: 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            min-height: 200px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.5;
+            overflow-y: auto;
+        }
+
+        /* Empty state */
+        .empty-state {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            text-align: center;
+            padding: 2rem;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <nav>
+            <button class="active" data-view="chat">Chat</button>
+            <button data-view="playground">Playground</button>
+            <button data-view="compare">Compare</button>
+        </nav>
+
+        <main>
+            <!-- Chat View -->
+            <div id="chat-view" class="view active">
+                <div class="settings">
+                    <div class="settings-row">
+                        <div class="setting">
+                            <label>Temp:</label>
+                            <input type="range" id="chat-temp" min="0" max="1" step="0.1" value="0.7">
+                            <span class="setting-value" id="chat-temp-value">0.7</span>
+                        </div>
+                        <div class="setting">
+                            <label>Max tokens:</label>
+                            <input type="text" id="chat-max-tokens" value="2048">
+                        </div>
+                    </div>
+                </div>
+                <div class="messages" id="chat-messages">
+                    <div class="empty-state">Send a message to start chatting</div>
+                </div>
+                <div class="input-area">
+                    <div class="input-row">
+                        <textarea id="chat-input" placeholder="Type a message..." rows="1"></textarea>
+                        <button class="send-btn" id="chat-send">➤</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Playground View -->
+            <div id="playground-view" class="view">
+                <div class="playground-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Model Name</label>
+                            <input type="text" id="pg-model-name" placeholder="llama32">
+                        </div>
+                        <div class="form-group">
+                            <label>Model URL</label>
+                            <input type="text" id="pg-model-url" placeholder="http://localhost:8080">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>System Prompt</label>
+                        <textarea id="pg-system" placeholder="You are a helpful assistant."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>User Prompt</label>
+                        <textarea id="pg-user" placeholder="Enter your message..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Temperature: <span id="pg-temp-value">0.7</span></label>
+                            <input type="range" id="pg-temp" min="0" max="1" step="0.1" value="0.7">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Tokens: <span id="pg-tokens-value">512</span></label>
+                            <input type="range" id="pg-tokens" min="50" max="2048" step="50" value="512">
+                        </div>
+                    </div>
+                    <button class="submit-btn" id="pg-submit">Send</button>
+                    <div class="form-group">
+                        <label>Response</label>
+                        <div class="response-box" id="pg-response">Response will appear here...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compare View -->
+            <div id="compare-view" class="view">
+                <div class="playground-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Model 1 Name</label>
+                            <input type="text" id="cmp-model1-name" placeholder="llama32">
+                        </div>
+                        <div class="form-group">
+                            <label>Model 1 URL</label>
+                            <input type="text" id="cmp-model1-url" placeholder="http://localhost:8080">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Model 2 Name</label>
+                            <input type="text" id="cmp-model2-name" placeholder="llama32-fp8">
+                        </div>
+                        <div class="form-group">
+                            <label>Model 2 URL</label>
+                            <input type="text" id="cmp-model2-url" placeholder="http://localhost:8081">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Prompt</label>
+                        <textarea id="cmp-prompt" placeholder="Enter your prompt..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Temperature: <span id="cmp-temp-value">0.7</span></label>
+                            <input type="range" id="cmp-temp" min="0" max="1" step="0.1" value="0.7">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Tokens: <span id="cmp-tokens-value">512</span></label>
+                            <input type="range" id="cmp-tokens" min="50" max="2048" step="50" value="512">
+                        </div>
+                    </div>
+                    <button class="submit-btn" id="cmp-submit">Compare Models</button>
+                    <div class="compare-results">
+                        <div class="model-result">
+                            <div class="model-header">
+                                <span class="model-name" id="cmp-name1">Model 1</span>
+                                <span class="model-time" id="cmp-time1">—</span>
+                            </div>
+                            <div class="model-response" id="cmp-response1">Response will appear here...</div>
+                        </div>
+                        <div class="model-result">
+                            <div class="model-header">
+                                <span class="model-name" id="cmp-name2">Model 2</span>
+                                <span class="model-time" id="cmp-time2">—</span>
+                            </div>
+                            <div class="model-response" id="cmp-response2">Response will appear here...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Navigation
+        document.querySelectorAll('nav button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(`${btn.dataset.view}-view`).classList.add('active');
+            });
+        });
+
+        // Auto-resize textarea
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        // Update slider values
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            const valueEl = document.getElementById(`${slider.id}-value`);
+            if (valueEl) {
+                slider.addEventListener('input', () => {
+                    valueEl.textContent = slider.value;
+                });
+            }
+        });
+
+        // Chat functionality
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const chatSend = document.getElementById('chat-send');
+        let chatHistory = [];
+
+        chatInput.addEventListener('input', () => autoResize(chatInput));
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChatMessage();
+            }
+        });
+        chatSend.addEventListener('click', sendChatMessage);
+
+        async function sendChatMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            // Clear empty state
+            const emptyState = chatMessages.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.textContent = message;
+            chatMessages.appendChild(userMsg);
+
+            // Clear input
+            chatInput.value = '';
+            autoResize(chatInput);
+            chatSend.disabled = true;
+
+            // Add assistant message placeholder
+            const assistantMsg = document.createElement('div');
+            assistantMsg.className = 'message assistant streaming';
+            chatMessages.appendChild(assistantMsg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        temperature: parseFloat(document.getElementById('chat-temp').value),
+                        max_tokens: parseInt(document.getElementById('chat-max-tokens').value),
+                        stream: true
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let content = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+                            try {
+                                const json = JSON.parse(data);
+                                if (json.content) {
+                                    content += json.content;
+                                    assistantMsg.textContent = content;
+                                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                                }
+                                if (json.error) {
+                                    assistantMsg.classList.add('error');
+                                    assistantMsg.textContent = json.error;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+
+                assistantMsg.classList.remove('streaming');
+            } catch (error) {
+                assistantMsg.classList.remove('streaming');
+                assistantMsg.classList.add('error');
+                assistantMsg.textContent = 'Failed to connect to server';
+            }
+
+            chatSend.disabled = false;
+        }
+
+        // Playground functionality
+        const pgSubmit = document.getElementById('pg-submit');
+        const pgResponse = document.getElementById('pg-response');
+
+        document.getElementById('pg-temp').addEventListener('input', (e) => {
+            document.getElementById('pg-temp-value').textContent = e.target.value;
+        });
+        document.getElementById('pg-tokens').addEventListener('input', (e) => {
+            document.getElementById('pg-tokens-value').textContent = e.target.value;
+        });
+
+        pgSubmit.addEventListener('click', async () => {
+            const userPrompt = document.getElementById('pg-user').value.trim();
+            if (!userPrompt) return;
+
+            pgSubmit.disabled = true;
+            pgResponse.textContent = '';
+
+            try {
+                const response = await fetch('/api/chat/playground', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_prompt: userPrompt,
+                        system_prompt: document.getElementById('pg-system').value || undefined,
+                        model_name: document.getElementById('pg-model-name').value || undefined,
+                        model_url: document.getElementById('pg-model-url').value || undefined,
+                        temperature: parseFloat(document.getElementById('pg-temp').value),
+                        max_tokens: parseInt(document.getElementById('pg-tokens').value),
+                        stream: true
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let content = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+                            try {
+                                const json = JSON.parse(data);
+                                if (json.content) {
+                                    content += json.content;
+                                    pgResponse.textContent = content;
+                                }
+                                if (json.error) {
+                                    pgResponse.textContent = json.error;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+            } catch (error) {
+                pgResponse.textContent = 'Failed to connect to server';
+            }
+
+            pgSubmit.disabled = false;
+        });
+
+        // Compare functionality
+        const cmpSubmit = document.getElementById('cmp-submit');
+
+        document.getElementById('cmp-temp').addEventListener('input', (e) => {
+            document.getElementById('cmp-temp-value').textContent = e.target.value;
+        });
+        document.getElementById('cmp-tokens').addEventListener('input', (e) => {
+            document.getElementById('cmp-tokens-value').textContent = e.target.value;
+        });
+
+        cmpSubmit.addEventListener('click', async () => {
+            const prompt = document.getElementById('cmp-prompt').value.trim();
+            if (!prompt) return;
+
+            cmpSubmit.disabled = true;
+            document.getElementById('cmp-response1').textContent = 'Loading...';
+            document.getElementById('cmp-response2').textContent = 'Loading...';
+            document.getElementById('cmp-time1').textContent = '...';
+            document.getElementById('cmp-time2').textContent = '...';
+
+            const model1Name = document.getElementById('cmp-model1-name').value || 'Model 1';
+            const model2Name = document.getElementById('cmp-model2-name').value || 'Model 2';
+            document.getElementById('cmp-name1').textContent = model1Name;
+            document.getElementById('cmp-name2').textContent = model2Name;
+
+            try {
+                const response = await fetch('/api/chat/compare', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        model_name_1: document.getElementById('cmp-model1-name').value || undefined,
+                        model_url_1: document.getElementById('cmp-model1-url').value || undefined,
+                        model_name_2: document.getElementById('cmp-model2-name').value || undefined,
+                        model_url_2: document.getElementById('cmp-model2-url').value || undefined,
+                        temperature: parseFloat(document.getElementById('cmp-temp').value),
+                        max_tokens: parseInt(document.getElementById('cmp-tokens').value)
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+                            try {
+                                const json = JSON.parse(data);
+                                if (json.results) {
+                                    for (const result of json.results) {
+                                        const responseEl = document.getElementById(`cmp-response${result.model_id}`);
+                                        const timeEl = document.getElementById(`cmp-time${result.model_id}`);
+                                        const nameEl = document.getElementById(`cmp-name${result.model_id}`);
+
+                                        responseEl.textContent = result.content;
+                                        timeEl.textContent = `${result.time.toFixed(2)}s`;
+                                        nameEl.textContent = result.model_name;
+                                    }
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+            } catch (error) {
+                document.getElementById('cmp-response1').textContent = 'Failed to connect';
+                document.getElementById('cmp-response2').textContent = 'Failed to connect';
+            }
+
+            cmpSubmit.disabled = false;
+        });
+
+        // Load config on startup
+        fetch('/config').then(r => r.json()).then(config => {
+            document.getElementById('pg-model-name').placeholder = config.default_model_name;
+            document.getElementById('pg-model-url').placeholder = config.default_model_url;
+            document.getElementById('cmp-model1-name').placeholder = config.default_model_name;
+            document.getElementById('cmp-model1-url').placeholder = config.default_model_url;
+            document.getElementById('cmp-model2-name').placeholder = config.compressed_model_name;
+            document.getElementById('cmp-model2-url').placeholder = config.compressed_model_url;
+        }).catch(() => {});
+    </script>
+</body>
+</html>

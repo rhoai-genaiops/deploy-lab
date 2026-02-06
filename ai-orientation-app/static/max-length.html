@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Context Window Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --error: #ef4444;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #111827;
+                --card-bg: #1f2937;
+                --text: #f9fafb;
+                --text-light: #9ca3af;
+                --border: #374151;
+            }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        body.embed {
+            max-width: 100%;
+            margin: 0;
+        }
+        header {
+            padding: 1rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        header h1 { font-size: 1.25rem; font-weight: 600; }
+        header p { font-size: 0.875rem; color: var(--text-light); margin-top: 0.25rem; }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .message {
+            max-width: 85%;
+            padding: 0.875rem 1rem;
+            border-radius: 1rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        .message.user {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .message.assistant {
+            align-self: flex-start;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 0.25rem;
+        }
+        .message.error { background: var(--error); color: white; }
+        .message.streaming::after {
+            content: '▊';
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+        .input-area {
+            padding: 1rem;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+        }
+        .input-row { display: flex; gap: 0.5rem; }
+        .input-area textarea {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: none;
+            min-height: 48px;
+            max-height: 120px;
+        }
+        .input-area textarea:focus { outline: none; border-color: var(--primary); }
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .send-btn:hover { background: var(--primary-dark); }
+        .send-btn:disabled { background: var(--border); cursor: not-allowed; }
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            text-align: center;
+            padding: 1.5rem;
+            gap: 1rem;
+        }
+        .empty-state p {
+            font-size: 0.875rem;
+        }
+        .prompt-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        }
+        .prompt-text {
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--text);
+            text-align: left;
+            margin-bottom: 0.75rem;
+        }
+        .copy-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--primary);
+            border-radius: 0.375rem;
+            background: transparent;
+            color: var(--primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .copy-btn.copied {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <script>if(new URLSearchParams(location.search).has('embed'))document.body.classList.add('embed');</script>
+    <header>
+        <h1>Context Window Demo</h1>
+        <p>See what happens when you hit the model's capacity limit</p>
+    </header>
+    <div class="messages" id="messages">
+        <div class="empty-state">
+            <p>Ask a long question to see the context window in action</p>
+            <div class="prompt-box">
+                <div class="prompt-text" id="sample-prompt">I'm interested in learning how to make an authentic Spanish tortilla de patatas, also known as a Spanish omelette. Could you please provide a step-by-step recipe, including ingredients, preparation tips, and cooking techniques that reflect the traditional way it's made in Spain?</div>
+                <button class="copy-btn" id="copy-btn">
+                    <span id="copy-icon">📋</span>
+                    <span id="copy-text">Copy prompt</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="input-area">
+        <div class="input-row">
+            <textarea id="input" placeholder="Type a message..." rows="1"></textarea>
+            <button class="send-btn" id="send">➤</button>
+        </div>
+    </div>
+
+    <script>
+        const messages = document.getElementById('messages');
+        const input = document.getElementById('input');
+        const send = document.getElementById('send');
+
+        // Copy button functionality
+        const copyBtn = document.getElementById('copy-btn');
+        const samplePrompt = document.getElementById('sample-prompt');
+
+        copyBtn.addEventListener('click', async () => {
+            const text = samplePrompt.textContent;
+            try {
+                await navigator.clipboard.writeText(text);
+                copyBtn.classList.add('copied');
+                document.getElementById('copy-icon').textContent = '✓';
+                document.getElementById('copy-text').textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    document.getElementById('copy-icon').textContent = '📋';
+                    document.getElementById('copy-text').textContent = 'Copy prompt';
+                }, 2000);
+            } catch (err) {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                copyBtn.classList.add('copied');
+                document.getElementById('copy-icon').textContent = '✓';
+                document.getElementById('copy-text').textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    document.getElementById('copy-icon').textContent = '📋';
+                    document.getElementById('copy-text').textContent = 'Copy prompt';
+                }, 2000);
+            }
+        });
+
+        input.addEventListener('input', () => {
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+        });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        });
+        send.addEventListener('click', sendMessage);
+
+        async function sendMessage() {
+            const message = input.value.trim();
+            if (!message) return;
+
+            const empty = messages.querySelector('.empty-state');
+            if (empty) empty.remove();
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.textContent = message;
+            messages.appendChild(userMsg);
+
+            input.value = '';
+            input.style.height = 'auto';
+            send.disabled = true;
+
+            const assistantMsg = document.createElement('div');
+            assistantMsg.className = 'message assistant streaming';
+            messages.appendChild(assistantMsg);
+            messages.scrollTop = messages.scrollHeight;
+
+            try {
+                const response = await fetch('/api/chat/max-length', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message,
+                        temperature: 0.7,
+                        max_tokens: 2000,
+                        stream: true
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let content = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    for (const line of decoder.decode(value).split('\n')) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+                            try {
+                                const json = JSON.parse(data);
+                                if (json.content) {
+                                    content += json.content;
+                                    assistantMsg.textContent = content;
+                                    messages.scrollTop = messages.scrollHeight;
+                                }
+                                if (json.error) {
+                                    assistantMsg.classList.add('error');
+                                    assistantMsg.textContent = json.error;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+                assistantMsg.classList.remove('streaming');
+            } catch (error) {
+                assistantMsg.classList.remove('streaming');
+                assistantMsg.classList.add('error');
+                assistantMsg.textContent = 'Failed to connect to server';
+            }
+            send.disabled = false;
+        }
+    </script>
+</body>
+</html>

@@ -26,7 +26,7 @@ spec:
             drop:
             - ALL
           readOnlyRootFilesystem: false
-        image: "quay.io/rhoai-genaiops/canopy-board:v4"
+        image: "quay.io/rhoai-genaiops/canopy-board:v5"
         imagePullPolicy: Always
         ports:
         - name: http

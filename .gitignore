@@ -1,5 +1,17 @@
 *.DS_Store
 *.gradio
-.claude
-.playwright-mcp
-.serena
+
+# MCP tools
+.serena/
+.playwright-mcp/
+
+# Node.js
+node_modules/
+
+# Canopy Board
+canopy-board/client/dist/
+canopy-board/server/public/
+canopy-board/server/db/
+*.db
+*.db-shm
+*.db-wal

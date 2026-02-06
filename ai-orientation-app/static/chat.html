@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Chat with the Model</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --error: #ef4444;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #111827;
+                --card-bg: #1f2937;
+                --text: #f9fafb;
+                --text-light: #9ca3af;
+                --border: #374151;
+            }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        body.embed {
+            max-width: 100%;
+            margin: 0;
+        }
+        header {
+            padding: 1rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        header h1 { font-size: 1.25rem; font-weight: 600; }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .message {
+            max-width: 85%;
+            padding: 0.875rem 1rem;
+            border-radius: 1rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        .message.user {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .message.assistant {
+            align-self: flex-start;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 0.25rem;
+        }
+        .message.error { background: var(--error); color: white; }
+        .message.streaming::after {
+            content: '▊';
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+        .settings {
+            padding: 0.75rem 1rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .setting {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .setting label { color: var(--text-light); }
+        .setting input[type="range"] { width: 80px; }
+        .setting input[type="text"] {
+            padding: 0.375rem 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.875rem;
+            width: 80px;
+        }
+        .setting-value { min-width: 2rem; text-align: center; font-weight: 500; }
+        .input-area {
+            padding: 1rem;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+        }
+        .input-row { display: flex; gap: 0.5rem; }
+        .input-area textarea {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: none;
+            min-height: 48px;
+            max-height: 120px;
+        }
+        .input-area textarea:focus { outline: none; border-color: var(--primary); }
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .send-btn:hover { background: var(--primary-dark); }
+        .send-btn:disabled { background: var(--border); cursor: not-allowed; }
+        .empty-state {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            text-align: center;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <script>if(new URLSearchParams(location.search).has('embed'))document.body.classList.add('embed');</script>
+    <header><h1>Chat with the Model</h1></header>
+    <div class="settings">
+        <div class="setting">
+            <label>Temp:</label>
+            <input type="range" id="temp" min="0" max="1" step="0.1" value="0.7">
+            <span class="setting-value" id="temp-value">0.7</span>
+        </div>
+        <div class="setting">
+            <label>Max tokens:</label>
+            <input type="text" id="max-tokens" value="2048">
+        </div>
+    </div>
+    <div class="messages" id="messages">
+        <div class="empty-state">Send a message to start chatting</div>
+    </div>
+    <div class="input-area">
+        <div class="input-row">
+            <textarea id="input" placeholder="Type a message..." rows="1"></textarea>
+            <button class="send-btn" id="send">➤</button>
+        </div>
+    </div>
+
+    <script>
+        const messages = document.getElementById('messages');
+        const input = document.getElementById('input');
+        const send = document.getElementById('send');
+        const temp = document.getElementById('temp');
+        const tempValue = document.getElementById('temp-value');
+
+        temp.addEventListener('input', () => tempValue.textContent = temp.value);
+        input.addEventListener('input', () => {
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+        });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        });
+        send.addEventListener('click', sendMessage);
+
+        async function sendMessage() {
+            const message = input.value.trim();
+            if (!message) return;
+
+            const empty = messages.querySelector('.empty-state');
+            if (empty) empty.remove();
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.textContent = message;
+            messages.appendChild(userMsg);
+
+            input.value = '';
+            input.style.height = 'auto';
+            send.disabled = true;
+
+            const assistantMsg = document.createElement('div');
+            assistantMsg.className = 'message assistant streaming';
+            messages.appendChild(assistantMsg);
+            messages.scrollTop = messages.scrollHeight;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message,
+                        temperature: parseFloat(temp.value),
+                        max_tokens: parseInt(document.getElementById('max-tokens').value),
+                        stream: true
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let content = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    for (const line of decoder.decode(value).split('\n')) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+                            try {
+                                const json = JSON.parse(data);
+                                if (json.content) {
+                                    content += json.content;
+                                    assistantMsg.textContent = content;
+                                    messages.scrollTop = messages.scrollHeight;
+                                }
+                                if (json.error) {
+                                    assistantMsg.classList.add('error');
+                                    assistantMsg.textContent = json.error;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+                assistantMsg.classList.remove('streaming');
+            } catch (error) {
+                assistantMsg.classList.remove('streaming');
+                assistantMsg.classList.add('error');
+                assistantMsg.textContent = 'Failed to connect to server';
+            }
+            send.disabled = false;
+        }
+    </script>
+</body>
+</html>
