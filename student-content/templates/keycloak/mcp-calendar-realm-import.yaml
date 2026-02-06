@@ -170,7 +170,7 @@ spec:
       - username: user{{ $attendee }}
         firstName: User
         lastName: "{{ $attendee }}"
-        email: user{{ $attendee }}@example.com
+        email: user{{ $attendee }}@rdu.com
         emailVerified: true
         enabled: true
         realmRoles:
