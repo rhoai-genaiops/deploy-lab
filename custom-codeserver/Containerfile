@@ -12,5 +12,10 @@ COPY run-code-server.sh /opt/app-root/bin/run-code-server.sh
 COPY startup.sh /opt/app-root/bin/startup.sh
 RUN chmod +x /opt/app-root/bin/run-code-server.sh /opt/app-root/bin/startup.sh
 
+# kubeseal
+RUN curl -sL https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.29.0/kubeseal-0.29.0-linux-amd64.tar.gz | tar --no-same-owner -xzf - -C /usr/local/bin kubeseal && \
+    chmod -R 755 /usr/local/bin/kubeseal
+
+
 USER 1001
 ENTRYPOINT [ "startup.sh" ]
