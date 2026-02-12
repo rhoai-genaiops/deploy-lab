@@ -1,0 +1,15 @@
+{{ $attendees := (add1 .Values.attendees | int) }}
+{{- range $attendee := untilStep 1 $attendees 1 }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: metadata-mysql
+  namespace: user{{ $attendee }}-canopy
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+{{- end }}

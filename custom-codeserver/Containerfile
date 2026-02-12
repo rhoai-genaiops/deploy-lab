@@ -4,6 +4,7 @@ FROM registry.redhat.io/rhoai/odh-workbench-codeserver-datascience-cpu-py312-rhe
 ADD . .
 
 RUN pip install --no-deps -r frozen-requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+RUN pip install nest_asyncio==1.6.0 sdg_hub==0.8.0 model-registry[olot]==0.3.6
 
 # COPY settings.json /opt/app-root/src/.vscode/settings.json
 
