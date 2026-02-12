@@ -1,0 +1,56 @@
+{{ $attendees := (add1 .Values.attendees | int) }}
+{{- range $attendee := untilStep 1 $attendees 1 }}
+---
+# OpenTelemetry Collector for per-user trace collection
+# Routes traces to local TempoMonolithic instance
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: trace-collector
+  namespace: user{{ $attendee }}-toolings
+spec:
+  mode: deployment
+  replicas: 1
+  resources:
+    limits:
+      memory: 256Mi
+      cpu: 200m
+    requests:
+      memory: 128Mi
+      cpu: 50m
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    exporters:
+      # Export traces to local Tempo instance via OTLP HTTP (port 4318)
+      # Service name is tempo-<tempomonolithic-name> = tempo-tempo-local
+      otlphttp/tempo:
+        endpoint: http://tempo-tempo-local:4318
+        tls:
+          insecure: true
+      # Debug exporter for troubleshooting
+      debug:
+        verbosity: basic
+
+    processors:
+      batch:
+        timeout: 5s
+        send_batch_size: 1000
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 200
+        spike_limit_mib: 50
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [otlphttp/tempo, debug]
+{{- end }}

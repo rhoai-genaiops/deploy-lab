@@ -1,0 +1,34 @@
+{{ $attendees := (add1 .Values.attendees | int) }}
+{{- range $attendee := untilStep 1 $attendees 1 }}
+---
+# TempoMonolithic instance for per-user trace storage
+# Deploys in each userX-toolings namespace with PV-backed storage
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoMonolithic
+metadata:
+  name: tempo-local
+  namespace: user{{ $attendee }}-toolings
+spec:
+  # Disable multitenancy - single tenant per user namespace
+  multitenancy:
+    enabled: false
+  # Resource limits - lightweight for per-user deployment
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  # PV-backed storage - no MinIO required
+  storage:
+    traces:
+      backend: pv
+      size: 50Gi
+  # Tempo configuration
+  extraConfig:
+    tempo:
+      compactor:
+        compaction:
+          block_retention: 720h  # 30 days retention
+{{- end }}
