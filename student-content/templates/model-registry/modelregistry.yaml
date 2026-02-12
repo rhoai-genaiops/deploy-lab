@@ -1,0 +1,40 @@
+{{ $cluster_domain := .Values.cluster_domain }}
+{{ $attendees := (add1 .Values.attendees | int) }}
+{{- range $attendee := untilStep 1 $attendees 1 }}
+---
+apiVersion: modelregistry.opendatahub.io/v1beta1
+kind: ModelRegistry
+metadata:
+  annotations:
+    openshift.io/description: 'user{{ $attendee }} Model Registry'
+    openshift.io/display-name: user{{ $attendee }}-registry
+  name: user{{ $attendee }}-registry
+  namespace: rhoai-model-registries
+  finalizers:
+    - modelregistry.opendatahub.io/finalizer
+spec:
+  grpc:
+    port: 9090
+  mysql:
+    database: metadb
+    host: user{{ $attendee }}-registry-db.user{{ $attendee }}-canopy.svc.cluster.local
+    passwordSecret:
+      key: database-password
+      name: user{{ $attendee }}-registry-db
+    port: 3306
+    username: root
+  oauthProxy:
+    port: 8443
+    routePort: 443
+    serviceRoute: enabled
+  rest:
+    port: 8080
+    resources:
+      limits:
+        cpu: 100m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    serviceRoute: disabled
+{{- end }}
