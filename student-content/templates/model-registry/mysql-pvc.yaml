@@ -5,7 +5,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: metadata-mysql
-  namespace: user{{ $attendee }}-canopy
+  namespace: model-registries-ai501
 spec:
   accessModes:
     - ReadWriteOnce
