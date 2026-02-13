@@ -4,7 +4,7 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: metadata-mysql
+  name: user{{ $attendee }}-metadata-mysql
   namespace: model-registries-ai501
 spec:
   accessModes:
