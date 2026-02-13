@@ -17,7 +17,7 @@ spec:
     port: 9090
   mysql:
     database: metadb
-    host: user{{ $attendee }}-registry-db.rhoai-model-registries.svc.cluster.local
+    host: user{{ $attendee }}-registry-db.model-registries-ai501.svc.cluster.local
     passwordSecret:
       key: database-password
       name: user{{ $attendee }}-registry-db

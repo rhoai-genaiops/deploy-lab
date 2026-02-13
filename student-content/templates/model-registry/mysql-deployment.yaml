@@ -25,7 +25,7 @@ spec:
       volumes:
         - name: metadata-mysql
           persistentVolumeClaim:
-            claimName: metadata-mysql
+            claimName: user{{ $attendee }}-metadata-mysql
       containers:
         - resources: {}
           readinessProbe:
