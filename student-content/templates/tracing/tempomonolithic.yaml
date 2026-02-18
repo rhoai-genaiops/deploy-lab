@@ -15,8 +15,8 @@ spec:
   # Resource limits - lightweight for per-user deployment
   resources:
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 2
+      memory: 999Mi
     requests:
       cpu: 100m
       memory: 256Mi
@@ -24,7 +24,7 @@ spec:
   storage:
     traces:
       backend: pv
-      size: 50Gi
+      size: 200Gi
   # Tempo configuration
   extraConfig:
     tempo:
