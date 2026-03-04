@@ -2,7 +2,7 @@
 cluster_domain: apps.example.com
 modelName: "llama32"
 attendees: 20
-ocp4_workload_ai501_user_password: superdupersecretpassword
+common_password: superdupersecretpassword
 # minio:
 #   buckets:
 #     - name: pipeline
