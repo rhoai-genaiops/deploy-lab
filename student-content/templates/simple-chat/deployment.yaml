@@ -1,0 +1,30 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-chat
+  labels:
+    app: simple-chat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-chat
+  template:
+    metadata:
+      labels:
+        app: simple-chat
+    spec:
+      containers:
+        - name: simple-chat
+          image: quay.io/rhoai-genaiops/simple-chat:0.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8501
+              protocol: TCP
+          env:
+            - name: VLLM_GPU_ENDPOINT
+              value: http://llama-32-fp8-predictor.ai501.svc.cluster.local:8080
+            - name: VLLM_CPU_ENDPOINT
+              value: http://tinyllama-1b-cpu-predictor.ai501.svc.cluster.local:8080
