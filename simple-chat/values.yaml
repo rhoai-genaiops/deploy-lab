@@ -1,0 +1,5 @@
+image: quay.io/rhoai-genaiops/simple-chat:0.1
+
+env:
+  VLLM_GPU_ENDPOINT: "http://llama-32-fp8-predictor.ai501.svc.cluster.local:8080"
+  VLLM_CPU_ENDPOINT: "http://tinyllama-1b-cpu-predictor.ai501.svc.cluster.local:8080"
