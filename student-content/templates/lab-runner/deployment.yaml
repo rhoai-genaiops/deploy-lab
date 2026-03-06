@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab-runner
+  namespace: ai501
+  labels:
+    app.kubernetes.io/name: lab-runner
+    app.kubernetes.io/instance: lab-runner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: lab-runner
+      app.kubernetes.io/instance: lab-runner
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: lab-runner
+        app.kubernetes.io/instance: lab-runner
+    spec:
+      serviceAccountName: lab-runner
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: lab-runner
+          image: "quay.io/rhoai-genaiops/lab-runner:0.0.1"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /api/modules
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/modules
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
