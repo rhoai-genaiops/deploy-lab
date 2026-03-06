@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: simple-chat
-          image: {{ .Values.image }}
+          image: quay.io/rhoai-genaiops/simple-chat:0.1
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -24,6 +24,6 @@ spec:
               protocol: TCP
           env:
             - name: VLLM_GPU_ENDPOINT
-              value: {{ .Values.env.VLLM_GPU_ENDPOINT | quote }}
+              value: http://llama-32-fp8-predictor.ai501.svc.cluster.local:8080
             - name: VLLM_CPU_ENDPOINT
-              value: {{ .Values.env.VLLM_CPU_ENDPOINT | quote }}
+              value: http://tinyllama-1b-cpu-predictor.ai501.svc.cluster.local:8080
