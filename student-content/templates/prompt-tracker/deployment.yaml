@@ -18,13 +18,23 @@ spec:
     spec:
       containers:
       - name: prompt-tracker
-        image: quay.io/rhoai-genaiops/prompt-tracker:0.0.5
+        image: quay.io/rhoai-genaiops/prompt-tracker:0.0.6
         imagePullPolicy: Always
         env:
         - name: MONITOR_INTERVAL
           value: '30'
         - name: GIT_BRANCH
           value: main
+        - name: GIT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: prompt-tracker-secrets
+              key: git-password
+        - name: S3_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: prompt-tracker-secrets
+              key: s3-secret-key
         - name: S3_BUCKET_NAME
           value: test-results
         ports:
