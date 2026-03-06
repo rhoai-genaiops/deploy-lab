@@ -677,12 +677,12 @@ monitors = {}
 USER_CONFIG_TEMPLATE = {
     'git_repo_url': 'https://gitea-gitea.{cluster_domain}/{user}/backend.git',
     'git_username': '{user}',
-    'git_password': 'thisisthepassword',
+    'git_password': os.getenv('GIT_PASSWORD', ''),
     'git_branch': 'main',
     'monitor_interval': '30',
     's3_endpoint': 'https://minio-api-{user}-toolings.{cluster_domain}',
     's3_access_key': '{user}',
-    's3_secret_key': 'thisisthepassword',
+    's3_secret_key': os.getenv('S3_SECRET_KEY', ''),
     's3_bucket_name': 'test-results',
     's3_ui_url': 'https://minio-ui-{user}-toolings.{cluster_domain}',
     's3_refresh_interval': '60'
