@@ -1,0 +1,46 @@
+{{ $password := .Values.common_password }}
+{{ $buckets := .Values.minio.buckets}}
+{{ $attendees := (add1 .Values.attendees | int) }}
+{{- range $attendee := untilStep 1 $attendees 1 }}
+{{- range $bucket := $buckets }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $bucket.name }}
+  namespace: user{{ $attendee}}-canopy
+  labels:
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/managed: "true"
+  annotations:
+    opendatahub.io/connection-type: s3
+    openshift.io/display-name: {{ $bucket.name }}
+type: Opaque
+stringData:
+  AWS_ACCESS_KEY_ID: user{{ $attendee}}
+  AWS_SECRET_ACCESS_KEY: {{ $password | default "thisisthepassword" }}
+  AWS_DEFAULT_REGION: wonderland
+  AWS_S3_ENDPOINT: http://minio-service.user{{ $attendee}}-canopy.svc.cluster.local:9000
+  AWS_S3_BUCKET: {{ $bucket.name }}
+# toolings namespace
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $bucket.name }}
+  namespace: user{{ $attendee}}-toolings
+  labels:
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/managed: "true"
+  annotations:
+    opendatahub.io/connection-type: s3
+    openshift.io/display-name: {{ $bucket.name }}
+type: Opaque
+stringData:
+  AWS_ACCESS_KEY_ID: user{{ $attendee}}
+  AWS_SECRET_ACCESS_KEY: {{ $password | default "thisisthepassword" }}
+  AWS_DEFAULT_REGION: wonderland
+  AWS_S3_ENDPOINT: http://minio-service.user{{ $attendee}}-toolings.svc.cluster.local:9000
+  AWS_S3_BUCKET: {{ $bucket.name }}
+{{- end }}
+{{- end }}
