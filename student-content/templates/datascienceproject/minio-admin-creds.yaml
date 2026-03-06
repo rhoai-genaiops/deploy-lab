@@ -1,0 +1,26 @@
+{{ $password := .Values.common_password }}
+{{ $attendees := (add1 .Values.attendees | int) }}
+{{- range $attendee := untilStep 1 $attendees 1 }}
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: minio-secret
+  namespace: user{{ $attendee}}-canopy
+stringData:
+  # change the username and password to your own values.
+  # ensure that the user is at least 3 characters long and the password at least 8
+  minio_root_user: user{{ $attendee}}
+  minio_root_password: {{ $password | default "thisisthepassword" }}
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: minio-secret
+  namespace: user{{ $attendee}}-toolings
+stringData:
+  # change the username and password to your own values.
+  # ensure that the user is at least 3 characters long and the password at least 8
+  minio_root_user: user{{ $attendee}}
+  minio_root_password: {{ $password | default "thisisthepassword" }}
+{{- end }}

@@ -3,7 +3,8 @@ cluster_domain: apps.example.com
 modelName: "llama32"
 attendees: 20
 common_password: superdupersecretpassword
-# minio:
-#   buckets:
-#     - name: pipeline
-#     - name: test-results
+minio:
+  buckets:
+    - name: pipeline
+    - name: test-results
+    - name: documents
