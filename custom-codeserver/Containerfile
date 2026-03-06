@@ -12,11 +12,17 @@ USER root
 COPY run-code-server.sh /opt/app-root/bin/run-code-server.sh
 COPY startup.sh /opt/app-root/bin/startup.sh
 RUN chmod +x /opt/app-root/bin/run-code-server.sh /opt/app-root/bin/startup.sh
+ENV HELM_VERSION=3.16.2 
 
 # kubeseal
 RUN curl -sL https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.29.0/kubeseal-0.29.0-linux-amd64.tar.gz | tar --no-same-owner -xzf - -C /usr/local/bin kubeseal && \
     chmod -R 755 /usr/local/bin/kubeseal
-
+# helm
+RUN curl -skL -o /tmp/helm.tar.gz https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz && \
+    tar -C /tmp -xzf /tmp/helm.tar.gz && \
+    mv -v /tmp/linux-amd64/helm /usr/local/bin && \
+    chmod -R 775 /usr/local/bin/helm && \
+    rm -rf /tmp/linux-amd64
 
 USER 1001
 ENTRYPOINT [ "startup.sh" ]
