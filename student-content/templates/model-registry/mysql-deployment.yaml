@@ -8,17 +8,20 @@ metadata:
   namespace: model-registries-ai501
   labels:
     component: db
+    app: user{{ $attendee }}-registry-db
 spec:
   replicas: 1
   selector:
     matchLabels:
       component: db
+      app: user{{ $attendee }}-registry-db
   template:
     metadata:
       name: db
       creationTimestamp: null
       labels:
         component: db
+        app: user{{ $attendee }}-registry-db
       annotations:
         sidecar.istio.io/inject: 'false'
     spec:

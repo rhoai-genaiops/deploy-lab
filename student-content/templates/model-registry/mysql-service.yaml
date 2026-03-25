@@ -17,4 +17,5 @@ spec:
   type: ClusterIP
   selector:
     component: db
+    app: user{{ $attendee }}-registry-db
 {{- end }}
