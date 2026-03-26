@@ -66,3 +66,6 @@ spec:
 
               # 3. Mount CA bundle in Prometheus
               oc patch prometheuses.monitoring.rhobs data-science-monitoringstack -n redhat-ods-monitoring --type=merge -p '{"spec":{"configMaps":["serving-certs-ca-bundle"]}}'
+
+              # 4. Fix-monitoring: Add more memory to the data-science-collector:
+              oc patch opentelemetrycollectors.opentelemetry.io data-science-collector --type='json' -p='[{"op": "replace", "path": "/spec/resources/limits/memory", "value":"1Gi"}]'
