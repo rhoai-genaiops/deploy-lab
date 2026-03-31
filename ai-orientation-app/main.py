@@ -7,7 +7,7 @@ from typing import Optional
 from contextlib import asynccontextmanager
 
 import httpx
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -182,6 +182,48 @@ async def context_page():
 async def max_length_page():
     """Serve the max length demo UI."""
     return FileResponse(STATIC_DIR / "max-length.html")
+
+
+@app.get("/tokenizer")
+async def tokenizer_page():
+    """Serve the tokenizer playground UI."""
+    return FileResponse(STATIC_DIR / "tokenizer.html")
+
+
+@app.post("/api/tokenize")
+async def tokenize(request: Request):
+    """
+    Tokenize text using the vLLM /tokenize endpoint.
+    Accepts {"text": "..."} and returns token IDs and individual token texts.
+    """
+    body = await request.json()
+    text = body.get("text", "")
+    if not text:
+        return {"tokens": [], "count": 0}
+
+    url = f"{DEFAULT_MODEL_URL.rstrip('/')}/tokenize"
+    try:
+        response = await http_client.post(url, json={"prompt": text})
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
+        data = response.json()
+        token_ids = data.get("tokens", [])
+
+        # Detokenize each token individually to get per-token text
+        token_texts = []
+        for tid in token_ids:
+            dt_url = f"{DEFAULT_MODEL_URL.rstrip('/')}/detokenize"
+            dt_resp = await http_client.post(dt_url, json={"tokens": [tid]})
+            if dt_resp.status_code == 200:
+                token_texts.append(dt_resp.json().get("prompt", ""))
+            else:
+                token_texts.append(f"[{tid}]")
+
+        return {"tokens": token_ids, "token_texts": token_texts, "count": len(token_ids)}
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=504, detail="Tokenizer request timed out")
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=502, detail=f"Tokenizer request failed: {str(e)}")
 
 
 @app.get("/health")

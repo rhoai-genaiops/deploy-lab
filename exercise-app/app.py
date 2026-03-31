@@ -14,7 +14,6 @@ templates = Jinja2Templates(directory="templates")
 
 # Get AI orientation app URL from environment variable
 AI_ORIENTATION_APP_URL = os.getenv("AI_ORIENTATION_APP_URL", "http://localhost:8000")
-TOKENIZER_URL = "https://agents-course-the-tokenizer-playground.static.hf.space"
 
 # Define exercises
 EXERCISES = [
@@ -31,8 +30,8 @@ EXERCISES = [
         "title": "Tokenizer Playground",
         "description": "Explore how LLMs break text into tokens",
         "icon": "puzzle-piece",
-        "url": TOKENIZER_URL,
-        "external": True,
+        "path": "/tokenizer",
+        "external": False,
     },
     {
         "id": "guardrails",

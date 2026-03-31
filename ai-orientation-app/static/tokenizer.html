@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokenizer Playground</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --error: #ef4444;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #111827;
+                --card-bg: #1f2937;
+                --text: #f9fafb;
+                --text-light: #9ca3af;
+                --border: #374151;
+            }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            padding: 1rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        header h1 { font-size: 1.25rem; font-weight: 600; }
+        .container {
+            flex: 1;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .input-section textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+        }
+        .input-section textarea:focus { outline: none; border-color: var(--primary); }
+        .stats-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+        .stats-numbers {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        .stats-numbers strong { color: var(--text); }
+        .stats-explanation {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+        .result-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .result-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .tokens-display {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            line-height: 2.2;
+            min-height: 60px;
+        }
+        .token {
+            display: inline;
+            padding: 0.2rem 0.125rem;
+            border-radius: 0.25rem;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9rem;
+            cursor: default;
+            position: relative;
+            border-bottom: 2px solid;
+        }
+        .token:hover {
+            opacity: 0.8;
+        }
+        .token-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text);
+            color: var(--bg);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .token:hover .token-tooltip { display: block; }
+        .empty-state {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 2rem;
+        }
+        .error-msg {
+            color: var(--error);
+            font-size: 0.875rem;
+        }
+        .loading {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        .loading::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+    </style>
+</head>
+<body>
+    <header><h1>Tokenizer Playground</h1></header>
+    <div class="container">
+        <div class="input-section">
+            <textarea id="input" placeholder="Type or paste text here to see how the model tokenizes it..."></textarea>
+        </div>
+        <div class="result-section">
+            <div>
+                <div class="result-label">Tokens</div>
+                <div class="tokens-display" id="tokens-display">
+                    <div class="empty-state">Start typing to see tokens</div>
+                </div>
+            </div>
+            <div class="stats-panel" id="stats-panel" style="display:none;">
+                <div class="stats-numbers" id="stats"></div>
+                <div class="stats-explanation">
+                    <strong>Chars/token</strong> = average characters per token. Higher means the tokenizer is more efficient (fewer tokens for the same text). Rare words, non-English text, or code tend to produce lower ratios as they get split into smaller pieces.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const COLORS = [
+            '#dbeafe', '#fce7f3', '#d1fae5', '#fef3c7', '#ede9fe',
+            '#ffedd5', '#cffafe', '#f3e8ff', '#fecaca', '#d9f99d',
+        ];
+        const BORDER_COLORS = [
+            '#3b82f6', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6',
+            '#f97316', '#06b6d4', '#a855f7', '#ef4444', '#84cc16',
+        ];
+
+        const input = document.getElementById('input');
+        const stats = document.getElementById('stats');
+        const tokensDisplay = document.getElementById('tokens-display');
+        let debounceTimer = null;
+        let requestId = 0;
+
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(tokenize, 300);
+        });
+
+        async function tokenize() {
+            const text = input.value;
+            if (!text) {
+                tokensDisplay.innerHTML = '<div class="empty-state">Start typing to see tokens</div>';
+                document.getElementById('stats-panel').style.display = 'none';
+                stats.textContent = '';
+                return;
+            }
+
+            const thisRequest = ++requestId;
+
+            try {
+                const response = await fetch('/api/tokenize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                // Discard if a newer request was fired
+                if (thisRequest !== requestId) return;
+
+                if (!response.ok) {
+                    const err = await response.text();
+                    throw new Error(err);
+                }
+
+                const data = await response.json();
+                renderTokens(data.token_texts, data.tokens);
+                stats.innerHTML = `<strong>${data.count}</strong> tokens | <strong>${text.length}</strong> characters | <strong>${(text.length / data.count).toFixed(1)}</strong> chars/token`;
+                document.getElementById('stats-panel').style.display = '';
+            } catch (error) {
+                if (thisRequest !== requestId) return;
+                tokensDisplay.innerHTML = `<div class="error-msg">Failed to tokenize: ${error.message}</div>`;
+            }
+        }
+
+        function renderTokens(tokenTexts, tokenIds) {
+            tokensDisplay.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+
+            tokenTexts.forEach((text, i) => {
+                const colorIdx = i % COLORS.length;
+                const span = document.createElement('span');
+                span.className = 'token';
+                span.style.backgroundColor = COLORS[colorIdx];
+                span.style.borderBottomColor = BORDER_COLORS[colorIdx];
+                span.style.color = '#1f2937';
+
+                // Show spaces and special chars visibly
+                let display = text.replace(/ /g, '\u00B7');
+                if (display === '') display = '\u2423';
+                span.textContent = display;
+
+                const tooltip = document.createElement('span');
+                tooltip.className = 'token-tooltip';
+                tooltip.textContent = `ID: ${tokenIds[i]}`;
+                span.appendChild(tooltip);
+
+                fragment.appendChild(span);
+            });
+
+            tokensDisplay.appendChild(fragment);
+        }
+    </script>
+</body>
+</html>
