@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: ai-orientation-app
-        image: quay.io/rhoai-genaiops/ai-orientation-app:0.0.3
+        image: quay.io/rhoai-genaiops/ai-orientation-app:0.0.4
         imagePullPolicy: Always
         env:
         - name: MODEL_URL
