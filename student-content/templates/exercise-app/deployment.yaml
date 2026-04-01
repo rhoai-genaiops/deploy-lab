@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: exercise-app
-        image: quay.io/rhoai-genaiops/exercise-app:0.0.3
+        image: quay.io/rhoai-genaiops/exercise-app:0.0.5
         imagePullPolicy: Always
         env:
         - name: AI_ORIENTATION_APP_URL

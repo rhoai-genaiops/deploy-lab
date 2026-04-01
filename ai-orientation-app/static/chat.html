@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat with the Model</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,7 +33,7 @@
             min-height: 100dvh;
             display: flex;
             flex-direction: column;
-            max-width: 500px;
+            max-width: 800px;
             margin: 0 auto;
         }
         body.embed {
@@ -83,15 +81,34 @@
             animation: blink 1s infinite;
         }
         @keyframes blink { 50% { opacity: 0; } }
+        .settings-toggle {
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            user-select: none;
+        }
+        .settings-toggle:hover { color: var(--text); }
+        .settings-toggle .arrow {
+            transition: transform 0.2s;
+            font-size: 0.6rem;
+        }
+        .settings-toggle.open .arrow { transform: rotate(90deg); }
         .settings {
             padding: 0.75rem 1rem;
             background: var(--card-bg);
             border-bottom: 1px solid var(--border);
-            display: flex;
+            display: none;
             gap: 1rem;
             flex-wrap: wrap;
             align-items: center;
         }
+        .settings.open { display: flex; }
         .setting {
             display: flex;
             align-items: center;
@@ -109,7 +126,47 @@
             font-size: 0.875rem;
             width: 80px;
         }
+        .setting-wide {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            width: 100%;
+        }
+        .setting-wide label { color: var(--text-light); white-space: nowrap; }
+        .setting-wide input[type="text"] {
+            flex: 1;
+            padding: 0.375rem 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.875rem;
+        }
         .setting-value { min-width: 2rem; text-align: center; font-weight: 500; }
+        .toggle-group {
+            display: flex;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .toggle-group button {
+            padding: 0.375rem 0.75rem;
+            border: none;
+            background: var(--bg);
+            color: var(--text-light);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .toggle-group button.active {
+            background: var(--primary);
+            color: white;
+        }
+        .toggle-group button:not(:last-child) {
+            border-right: 1px solid var(--border);
+        }
         .input-area {
             padding: 1rem;
             background: var(--card-bg);
@@ -160,7 +217,8 @@
 <body>
     <script>if(new URLSearchParams(location.search).has('embed'))document.body.classList.add('embed');</script>
     <header><h1>Chat with the Model</h1></header>
-    <div class="settings">
+    <div class="settings-toggle" id="settings-toggle"><span class="arrow">&#9654;</span> Settings</div>
+    <div class="settings" id="settings">
         <div class="setting">
             <label>Temp:</label>
             <input type="range" id="temp" min="0" max="1" step="0.1" value="0.7">
@@ -168,7 +226,18 @@
         </div>
         <div class="setting">
             <label>Max tokens:</label>
-            <input type="text" id="max-tokens" value="2048">
+            <input type="text" id="max-tokens" value="1024">
+        </div>
+        <div class="setting">
+            <label>Hardware:</label>
+            <div class="toggle-group" id="hw-toggle">
+                <button class="active" data-hw="gpu">⚡ GPU</button>
+                <button data-hw="cpu">🐢 CPU</button>
+            </div>
+        </div>
+        <div class="setting-wide">
+            <label>System prompt:</label>
+            <input type="text" id="system-prompt" value="You are a helpful tutor.">
         </div>
     </div>
     <div class="messages" id="messages">
@@ -187,6 +256,28 @@
         const send = document.getElementById('send');
         const temp = document.getElementById('temp');
         const tempValue = document.getElementById('temp-value');
+        let selectedHw = 'gpu';
+        let cpuModelUrl = '';
+        let cpuModelName = '';
+
+        fetch('/config').then(r => r.json()).then(c => {
+            cpuModelUrl = c.tiny_model_url;
+            cpuModelName = c.tiny_model_name;
+        });
+        const settingsToggle = document.getElementById('settings-toggle');
+        const settingsPanel = document.getElementById('settings');
+        settingsToggle.addEventListener('click', () => {
+            settingsToggle.classList.toggle('open');
+            settingsPanel.classList.toggle('open');
+        });
+
+        document.getElementById('hw-toggle').addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-hw]');
+            if (!btn) return;
+            selectedHw = btn.dataset.hw;
+            document.querySelectorAll('#hw-toggle button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
 
         temp.addEventListener('input', () => tempValue.textContent = temp.value);
         input.addEventListener('input', () => {
@@ -220,15 +311,22 @@
             messages.scrollTop = messages.scrollHeight;
 
             try {
-                const response = await fetch('/api/chat', {
+                const systemPrompt = document.getElementById('system-prompt').value;
+                const payload = {
+                    user_prompt: message,
+                    system_prompt: systemPrompt,
+                    temperature: parseFloat(temp.value),
+                    max_tokens: parseInt(document.getElementById('max-tokens').value),
+                    stream: true
+                };
+                if (selectedHw === 'cpu') {
+                    payload.model_url = cpuModelUrl;
+                    payload.model_name = cpuModelName;
+                }
+                const response = await fetch('/api/chat/playground', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message,
-                        temperature: parseFloat(temp.value),
-                        max_tokens: parseInt(document.getElementById('max-tokens').value),
-                        stream: true
-                    })
+                    body: JSON.stringify(payload)
                 });
 
                 const reader = response.body.getReader();

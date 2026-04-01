@@ -14,7 +14,6 @@ templates = Jinja2Templates(directory="templates")
 
 # Get AI orientation app URL from environment variable
 AI_ORIENTATION_APP_URL = os.getenv("AI_ORIENTATION_APP_URL", "http://localhost:8000")
-TOKENIZER_URL = "https://agents-course-the-tokenizer-playground.static.hf.space"
 
 # Define exercises
 EXERCISES = [
@@ -31,8 +30,16 @@ EXERCISES = [
         "title": "Tokenizer Playground",
         "description": "Explore how LLMs break text into tokens",
         "icon": "puzzle-piece",
-        "url": TOKENIZER_URL,
-        "external": True,
+        "path": "/tokenizer",
+        "external": False,
+    },
+    {
+        "id": "prompt",
+        "title": "Prompt Engineering Lab",
+        "description": "Experiment with different prompting techniques",
+        "icon": "terminal",
+        "path": "/playground",
+        "external": False,
     },
     {
         "id": "guardrails",
@@ -43,35 +50,11 @@ EXERCISES = [
         "external": True,
     },
     {
-        "id": "context",
-        "title": "Max Tokens Demo",
-        "description": "Control how many tokens the model generates",
-        "icon": "window-maximize",
-        "path": "/context",
-        "external": False,
-    },
-    {
-        "id": "maxlength",
-        "title": "Context Window Demo",
-        "description": "See what happens when you hit the model's capacity limit",
-        "icon": "ruler-horizontal",
-        "path": "/max-length",
-        "external": False,
-    },
-    {
         "id": "compare",
         "title": "Side-by-Side Model Comparison",
         "description": "Compare different models and optimization techniques",
         "icon": "bolt",
         "path": "/compare",
-        "external": False,
-    },
-    {
-        "id": "prompt",
-        "title": "Prompt Engineering Lab",
-        "description": "Experiment with different prompting techniques",
-        "icon": "terminal",
-        "path": "/playground",
         "external": False,
     },
 ]
