@@ -24,7 +24,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: lab-runner
-          image: "quay.io/rhoai-genaiops/lab-runner:0.0.2"
+          image: "quay.io/rhoai-genaiops/lab-runner:0.0.3"
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
