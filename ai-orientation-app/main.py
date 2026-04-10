@@ -37,7 +37,7 @@ class PlaygroundRequest(BaseModel):
     system_prompt: Optional[str] = "You are a helpful assistant."
     model_name: Optional[str] = None
     model_url: Optional[str] = None
-    temperature: float = Field(default=0.7, ge=0.0, le=1.0)
+    temperature: float = Field(default=0.7, ge=0.0, le=2.0)
     max_tokens: int = Field(default=100, ge=1, le=4096)
     stream: bool = True
 
