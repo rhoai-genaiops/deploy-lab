@@ -18,6 +18,9 @@ rules:
 - apiGroups: ["monitoring.rhobs"]
   resources: ["prometheuses"]
   verbs: ["get", "patch", "update"]
+- apiGroups: ["opentelemetry.io"]
+  resources: ["opentelemetrycollectors"]
+  verbs: ["get", "patch", "update"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
