@@ -1,0 +1,40 @@
+{{ $attendees := (add1 .Values.attendees | int) }}
+{{- range $attendee := untilStep 1 $attendees 1 }}
+---                                                  
+apiVersion: v1                                                                                                                                                    
+kind: ConfigMap                                                                                                                                                 
+metadata:
+  name: gen-ai-aa-custom-model-endpoints
+  namespace: user{{ $attendee}}-canopy
+data:                                               
+  config.yaml: |                                                                                                                                                  
+    providers:                                                                                                                                                    
+      inference:                                    
+        - provider_id: vllm                                                                                                                                 
+          provider_type: "remote::passthrough"                                                                                
+          config:                                                                                                                                                 
+            base_url: "http://llama-32-predictor.ai501.svc.cluster.local:80/v1"                                                                                                                                     
+            custom_gen_ai:                                                                                                                                        
+              api_key:                                                                                                                                            
+                secretRef:                          
+                  name: llama32-playground-api-key        # K8s Secret name                                                                                               
+                  key: api_key                    # key within the Secret                                                                                       
+    registered_resources:                                                                                                                                         
+      models:                                                                                                                                                   
+        - model_id: llama32                                                                                                                                        
+          provider_id: vllm                 # references a provider above
+          model_type: llm                                                                                                                                         
+          metadata:                                                                                                                                             
+            display_name: "llama32"                                                                                                                                
+            custom_gen_ai:                          
+              use_cases: "chat,summarization"   
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: llama32-playground-api-key
+  namespace: user{{ $attendee}}-canopy
+data:
+  api_key: ZmFrZQ==
+type: Opaque
+{{- end}}
