@@ -7,6 +7,12 @@ metadata:
   namespace: ai501
   annotations:
     helm.sh/weight: "0"
+    opendatahub.io/apiProtocol: REST
+    opendatahub.io/recommended-accelerators: '["nvidia.com/gpu"]'
+    opendatahub.io/serving-runtime-scope: global
+    opendatahub.io/template-display-name: Hugging Face Detector ServingRuntime for KServe
+    opendatahub.io/template-name: guardrails-detector-huggingface-serving-template
+    openshift.io/display-name: Hugging Face Detector ServingRuntime for KServe
   labels:
     opendatahub.io/dashboard: 'true'
 spec:
@@ -50,10 +56,15 @@ metadata:
   annotations:
     helm.sh/weight: "1"
     openshift.io/display-name: language-detector
-    serving.knative.openshift.io/enablePassthrough: 'true'
-    serving.kserve.io/deploymentMode: RawDeployment
-    sidecar.istio.io/inject: 'true'
-    sidecar.istio.io/rewriteAppHTTPProbers: 'true'
+    modelFormat: guardrails-detector-huggingface
+    security.opendatahub.io/enable-auth: 'false'
+    openshift.io/description: ''
+    serving.kserve.io/deploymentMode: Standard
+    opendatahub.io/hardware-profile-namespace: redhat-ods-applications
+    opendatahub.io/hardware-profile-name: cpu-profile
+    opendatahub.io/connection-path: xlm-roberta-base-language-detection
+    opendatahub.io/connections: minio-data-connection-detector-models
+    opendatahub.io/model-type: predictive
   name: language-detector
   labels:
     opendatahub.io/dashboard: 'true'
