@@ -4,8 +4,12 @@ kind: ServingRuntime
 metadata:
   annotations:
     helm.sh/weight: "0"
+    opendatahub.io/apiProtocol: REST
     opendatahub.io/recommended-accelerators: '["nvidia.com/gpu"]'
-    openshift.io/display-name: Guardrails Detector ServingRuntime for KServe
+    opendatahub.io/serving-runtime-scope: global
+    opendatahub.io/template-display-name: Hugging Face Detector ServingRuntime for KServe
+    opendatahub.io/template-name: guardrails-detector-huggingface-serving-template
+    openshift.io/display-name: Hugging Face Detector ServingRuntime for KServe
   name: guardrails-detector-runtime-prompt-injection
   namespace: ai501
   labels:
