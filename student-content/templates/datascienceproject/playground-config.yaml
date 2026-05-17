@@ -17,15 +17,15 @@ data:
             custom_gen_ai:                                                                                                                                        
               api_key:                                                                                                                                            
                 secretRef:                          
-                  name: llama32-playground-api-key        # K8s Secret name                                                                                               
-                  key: api_key                    # key within the Secret                                                                                       
+                  name: llama32-playground-api-key                                                                                        
+                  key: api_key                                                                              
     registered_resources:                                                                                                                                         
       models:                                                                                                                                                   
         - model_id: llama32                                                                                                                                        
-          provider_id: vllm                 # references a provider above
+          provider_id: vllm 
           model_type: llm                                                                                                                                         
           metadata:                                                                                                                                             
-            display_name: "llama32"                                                                                                                                
+            display_name: "Llama 3.2"                                                                                                                                
             custom_gen_ai:                          
               use_cases: "chat,summarization"   
 ---

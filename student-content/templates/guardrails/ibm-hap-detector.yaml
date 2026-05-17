@@ -59,7 +59,7 @@ metadata:
     openshift.io/description: ''
     serving.kserve.io/deploymentMode: Standard
     opendatahub.io/hardware-profile-namespace: redhat-ods-applications
-    opendatahub.io/hardware-profile-name: cpu-profile
+    opendatahub.io/hardware-profile-name: default-profile
     opendatahub.io/connection-path: granite-guardian-hap-125m
     opendatahub.io/connections: minio-data-connection-detector-models
     opendatahub.io/model-type: predictive

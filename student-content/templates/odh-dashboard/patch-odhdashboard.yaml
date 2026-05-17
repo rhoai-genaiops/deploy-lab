@@ -1,0 +1,73 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: odh-dashboard-patcher
+  namespace: redhat-ods-applications
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-10"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: odh-dashboard-patcher
+  namespace: redhat-ods-applications
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-10"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+rules:
+  - apiGroups: ["opendatahub.io"]
+    resources: ["odhdashboardconfigs"]
+    resourceNames: ["odh-dashboard-config"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: odh-dashboard-patcher
+  namespace: redhat-ods-applications
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-10"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+subjects:
+  - kind: ServiceAccount
+    name: odh-dashboard-patcher
+    namespace: redhat-ods-applications
+roleRef:
+  kind: Role
+  name: odh-dashboard-patcher
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: patch-odh-dashboard-config
+  namespace: redhat-ods-applications
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      labels:
+        app: patch-odh-dashboard-config
+    spec:
+      serviceAccountName: odh-dashboard-patcher
+      restartPolicy: Never
+      containers:
+        - name: kubectl
+          image: registry.redhat.io/openshift4/ose-cli-rhel9:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              oc patch OdhDashboardConfig odh-dashboard-config \
+                -n redhat-ods-applications \
+                --type merge \
+                -p '{"spec":{"dashboardConfig":{"disableKServeMetrics":false,"disableLMEval":false,"disableModelCatalog":false,"disableModelRegistry":false,"disableTracking":false,"genAiStudio":true,"modelAsService":true}}}'
