@@ -182,4 +182,69 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: user{{ $attendee }}
+---
+# Allow pipeline-runner-dspa SA to access MLflow in its own canopy namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pipeline-runner-dspa-mlflow-admin
+  namespace: user{{ $attendee }}-canopy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- kind: ServiceAccount
+  name: pipeline-runner-dspa
+  namespace: user{{ $attendee }}-canopy
+---
+# Allow pipeline-runner-dspa SA to access MLflow in its own toolings namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pipeline-runner-dspa-mlflow-admin
+  namespace: user{{ $attendee }}-toolings
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- kind: ServiceAccount
+  name: pipeline-runner-dspa
+  namespace: user{{ $attendee }}-toolings
+---
+# Allow pipeline-runner-dspa SA from canopy and toolings to access MLflow in test/prod
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pipeline-runner-admin
+  namespace: user{{ $attendee }}-test
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- kind: ServiceAccount
+  name: pipeline-runner-dspa
+  namespace: user{{ $attendee }}-canopy
+- kind: ServiceAccount
+  name: pipeline-runner-dspa
+  namespace: user{{ $attendee }}-toolings
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pipeline-runner-admin
+  namespace: user{{ $attendee }}-prod
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- kind: ServiceAccount
+  name: pipeline-runner-dspa
+  namespace: user{{ $attendee }}-canopy
+- kind: ServiceAccount
+  name: pipeline-runner-dspa
+  namespace: user{{ $attendee }}-toolings
 {{- end }}
