@@ -30,6 +30,20 @@ roleRef:
   kind: ClusterRole
   name: admin
 ---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: user{{ $attendee }}-canopy-edit
+  namespace: user{{ $attendee }}-toolings
+subjects:
+  - kind: ServiceAccount
+    name: user{{ $attendee }}-canopy
+    namespace: user{{ $attendee }}-canopy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+---
 kind: Namespace
 apiVersion: v1
 metadata:
