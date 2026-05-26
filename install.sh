@@ -33,18 +33,29 @@ helm upgrade --install ai501-base operators \
     --namespace "${NAMESPACE}" \
     --create-namespace
 
-log_info "Waiting for GitOps operator to be ready..."
-oc wait --for=jsonpath='{.status.availableReplicas}'=1 \
-    -n openshift-gitops deployment/cluster
+log_info "Wait for all CSVs in operator namespaces to reach Succeeded"
+for ns in openshift-operators redhat-ods-operator openshift-operators-redhat; do
+    oc wait csv --all -n "$ns" --for=jsonpath='{.status.phase}'=Succeeded --timeout=300s
+done
 
 #------------------------------------------------------------------------------
 # Step 2: Install Shared Toolings
 #------------------------------------------------------------------------------
 
 log_step "Step 2/6: Installing shared toolings"
+helm dep up toolings
 helm upgrade --install ai501-toolings toolings \
     --namespace "${NAMESPACE}" \
     --create-namespace
+
+log_step "Wait for DataScienceCluster to become Ready"
+oc wait datasciencecluster --all --for=condition=Ready --timeout=300s
+
+
+log_info "Configuring user workload monitoring..."
+oc -n openshift-user-workload-monitoring patch configmap user-workload-monitoring-config \
+    --type=merge \
+    -p '{"data": {"config.yaml": "prometheus:\n  logLevel: debug\n  retention: 15d\nalertmanager:\n  enabled: true\n  enableAlertmanagerConfig: true\n"}}'
 
 #------------------------------------------------------------------------------
 # Step 3: Install Student Content
@@ -124,11 +135,6 @@ oc patch configmap config-defaults -n openshift-pipelines --type merge \
 
 log_info "Restarting Tekton controller to apply changes..."
 oc delete pod -l app=tekton-pipelines-controller -n openshift-pipelines
-
-log_info "Configuring user workload monitoring..."
-oc -n openshift-user-workload-monitoring patch configmap user-workload-monitoring-config \
-    --type=merge \
-    -p '{"data": {"config.yaml": "prometheus:\n  logLevel: debug\n  retention: 15d\nalertmanager:\n  enabled: true\n  enableAlertmanagerConfig: true\n"}}'
 
 #------------------------------------------------------------------------------
 # Complete

@@ -1,6 +1,6 @@
-llama-stack-client==0.3.0
+llama-stack-client==0.7.2
 fire==0.7.1
-llama-stack==0.3.0
+llama-stack==0.7.1
 rich==14.2.0
 git+https://github.com/RHRolun/guidellm.git
 sentence-transformers==3.0.1

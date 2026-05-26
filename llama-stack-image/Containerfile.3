@@ -1,0 +1,11 @@
+FROM quay.io/ckavili/odh-llama-stack-core-rhel9:rhoai-3.4
+
+RUN mkdir -p /opt/app-root/src/.llama/distributions/vllm \
+&& chgrp -R 0 /opt/app-root/src \
+&& chmod -R g=u /opt/app-root/src \
+&& sed -i '/extra = params.model_extra or {}/a\        vector_store_id_override = extra.get("vector_db_id") or extra.get("vector_store_id")' \
+    /opt/app-root/lib/python3.12/site-packages/llama_stack/core/routers/vector_io.py \
+&& sed -i 's/vector_store_id = f"vs_{uuid.uuid4()}"/vector_store_id = vector_store_id_override or f"vs_{uuid.uuid4()}"/' \
+    /opt/app-root/lib/python3.12/site-packages/llama_stack/core/routers/vector_io.py
+RUN sed -i 's/user_message = "Sorry I cannot do this."/user_message = response.get("blocked_message") or "Sorry I cannot do this."/' \
+    /opt/app-root/lib/python3.12/site-packages/llama_stack/providers/remote/safety/nvidia/nvidia.py

@@ -1,8 +1,8 @@
 ---
-cluster_domain: apps.example.com
+cluster_domain: apps.cluster-pwjcv.pwjcv.sandbox1619.opentlc.com
 modelName: "llama32"
-attendees: 20
-common_password: superdupersecretpassword
+attendees: 10
+common_password: thisisthepassword
 minio:
   buckets:
     - name: pipeline
