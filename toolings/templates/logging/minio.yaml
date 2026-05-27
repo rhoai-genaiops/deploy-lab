@@ -9,7 +9,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 50Gi
+      storage: 80Gi
   volumeMode: Filesystem
 ---
 kind: Deployment
