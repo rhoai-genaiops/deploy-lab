@@ -1,0 +1,13 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: gen-ai-aa-mcp-servers
+  namespace: redhat-ods-applications
+data:
+  Weather-MCP-Server: |
+    {
+      "url": "http://mcp-weather.ai501.svc.cluster.local/sse",
+      "transport": "sse",
+      "description": "An MCP server for getting real-time weather data."
+    }
