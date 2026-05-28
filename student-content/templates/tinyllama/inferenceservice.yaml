@@ -28,3 +28,6 @@ spec:
           memory: 12Gi
       runtime: vllm-cpu
       storageUri: 'oci://quay.io/rh-aiservices-bu/tinyllama:1.0'
+      args:
+        - '--served-model-name'
+        - tinyllama
