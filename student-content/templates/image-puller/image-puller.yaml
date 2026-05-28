@@ -6,4 +6,4 @@ metadata:
   namespace: openshift-operators
 spec:
   daemonsetName: k8s-image-puller
-  images: 'code-server=quay.io/rhoai-genaiops/codeserver:0.9;llama-stack=quay.io/rhoai-genaiops/odh-llama-stack-core-rhel9:rhoai-3.4-shields;nemo=http://quay.io/rh-ee-mmisiura/nemo-guardrails:hf_classifier_fix_regex_checks;'
+  images: 'code-server=quay.io/rhoai-genaiops/codeserver:0.9;llama-stack=quay.io/rhoai-genaiops/odh-llama-stack-core-rhel9:rhoai-3.4-shields;nemo=quay.io/rhoai-genaiops/nemo-guardrails:hf_classifier_v13;tinyllama=quay.io/rh-aiservices-bu/tinyllama:1.0;vllmcpu=quay.io/rh-aiservices-bu/vllm-cpu-openai-ubi9:0.3;'

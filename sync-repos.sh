@@ -4,7 +4,7 @@ set -euo pipefail
 GITEA_BASE="https://gitea-gitea.apps.cluster-pwjcv.pwjcv.sandbox1619.opentlc.com"
 GITEA_PASSWORD="thisisthepassword"
 GITHUB_ORG="rhoai-genaiops"
-REPOS=(evals)
+REPOS=(backend)
 # REPOS=(experiments backend frontend evals genaiops-gitops)
 WORKDIR=$(mktemp -d)
 

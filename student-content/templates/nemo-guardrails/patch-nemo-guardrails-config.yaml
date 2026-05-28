@@ -73,4 +73,4 @@ spec:
               oc patch configmap/trustyai-service-operator-config \
                 -n redhat-ods-applications \
                 --type merge \
-                -p '{"data":{"nemo-guardrails-image":"quay.io/rh-ee-mmisiura/nemo-guardrails:hf_classifier_fix_regex_streaming"}}'
+                -p '{"data":{"nemo-guardrails-image":"quay.io/rhoai-genaiops/nemo-guardrails:hf_classifier_v13"}}'
