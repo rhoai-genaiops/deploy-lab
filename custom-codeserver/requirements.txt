@@ -26,3 +26,6 @@ accelerate==1.10.1
 lm_eval==0.4.9.2 
 tenacity==9.1.2
 mlflow>=2.15.0
+opentelemetry-exporter-prometheus
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-httpx
