@@ -8,10 +8,13 @@ This repository provides a complete deployment solution for the AI501 GenAIOps l
 
 ## Prerequisites
 
-- OpenShift 4.119+ cluster with cluster-admin access
+- OpenShift 4.19+ cluster with cluster-admin access
 - Helm 3.x installed
 - `oc` CLI configured and authenticated
 - (Optional) AWS credentials for GPU machine provisioning
+- Operator NFD 
+- Operator Nvidia-gpu
+- Selfsigned CA + Cert on the default ingresscontroller
 
 ### GPU Requirements
 
@@ -24,6 +27,9 @@ This lab requires **3 GPU nodes** with two different taints:
 | Llama 3.2 FP8 (quantized-model) | 1 | g5 (A10G) | `nvidia.com/gpu=g5` |
 
 If you have different taints, make sure you update the necessary template for the deployments' tolerations.
+
+For the operators installation (NFD + Nvidia), please follow the Nvidia guide:
+https://docs.nvidia.com/datacenter/cloud-native/openshift/latest/install-gpu-ocp.html
 
 ## Quick Start
 
@@ -60,6 +66,10 @@ Edit `student-content/values.yaml` before installation:
 | `cluster_domain` | OpenShift apps domain (e.g., `apps.mycluster.example.com`) | `apps.example.com` |
 | `modelName` | Default LLM model name | `llama32` |
 | `attendees` | Number of student environments to create | `20` |
+
+Just in case, if you only are one user and dont want to install Signup Application for GenAIOps Lab to manage the password, you can modify the secret htpass before running the script ./install.sh:
+htpasswd -Bbn user1 <pass>
+toolings\templates\oauth\htpass-secret.yaml 
 
 ## Repository Structure
 
