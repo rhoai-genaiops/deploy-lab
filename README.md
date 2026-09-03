@@ -67,10 +67,6 @@ Edit `student-content/values.yaml` before installation:
 | `modelName` | Default LLM model name | `llama32` |
 | `attendees` | Number of student environments to create | `20` |
 
-Just in case, if you only are one user and dont want to install Signup Application for GenAIOps Lab to manage the password, you can modify the secret htpass before running the script ./install.sh:
-htpasswd -Bbn user1 <pass>
-toolings\templates\oauth\htpass-secret.yaml 
-
 ## Repository Structure
 
 ```
